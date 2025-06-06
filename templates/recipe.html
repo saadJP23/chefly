@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<link rel ='stylesheet' href="{{ url_for('static', filename='css/recipe.css') }}">
+
+    <div class="container">
+        <a href="{{ url_for('search') }}" class="back-button">← Back to Search</a>
+        
+        <div class="recipe-header">
+            <h1 class="recipe-title">{{ recipe.name }}</h1>
+            <div class="recipe-meta">
+                <span>Calories: {{ recipe.calories }}</span>
+                
+            </div>
+            <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}" class="recipe-image">
+        </div>
+
+        <div class="recipe-section">
+            <h2 class="section-title">Ingredients</h2>
+            <ul class="ingredients-list">
+                {% for ingredient in recipe.ingredients|from_json %}
+                    <li>{{ ingredient }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="recipe-section">
+            <h2 class="section-title">Instructions</h2>
+            <div class="instructions">{{ recipe.instructions }}</div>
+        </div>
+
+    </div>
+
+{% endblock %}
+

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/famous_dishes.css')}}">
+<div class="famous-dishes-container">
+    <div class="famous-header">
+        <h1>Famous Dishes</h1>
+        <p class="subtitle">Discover our most popular recipes</p>
+    </div>
+
+    <div class="dishes-grid">
+        {% if dishes %}
+            {% for dish in dishes %}
+            <a href="{{ url_for('view_recipe', recipe_id=dish.id) }}" class="dish-card-link">
+                <div class="dish-card">
+                    <div class="dish-image">
+                        <img src="{{ dish.image_url }}" alt="{{ dish.name }}"/>
+                    </div>
+                    <div class="dish-info">
+                        <h3>{{ dish.name }}</h3>
+                        <div class="dish-meta">
+                            <span class="calories">
+                                <i class="fas fa-fire"></i> {{ dish.calories }} calories
+                            </span>
+                        </div>
+                        <p class="dish-description">{{ dish.instructions[:100] }}...</p>
+                        <div class="view-recipe-text">View Recipe</div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="no-dishes">
+                <i class="fas fa-utensils"></i>
+                <h2>No dishes available</h2>
+                <p>Check back later for our famous dishes!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %} 

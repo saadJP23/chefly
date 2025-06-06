@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chefly - Your Culinary Community</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/home.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/footer.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body>
+    {% include 'navbar.html' %}
+
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Join the Chefly Community</h1>
+        <h2>Share recipes, swap tips, and spice up your cooking.</h2>
+        <p>
+          From family-favorite classics to daring new creations, connect with
+          fellow food lovers, save your must-try dishes, and get inspired daily.
+          Upload your own recipes, rate others, and watch your kitchen
+          confidence soar.
+        </p>
+        <a href="{{ url_for('famous_dishes') }}" class="cta-button"
+          >Get Cooking Together</a
+        >
+      </div>
+      <div class="hero-image">
+        <img
+          src="{{ url_for('static', filename='images/hero_img.png') }}"
+          alt="Chefly Community"
+        />
+      </div>
+    </section>
+
+    <section class="categories">
+      <div class="category-card">
+        <div class="category-icon">
+          <i class="fas fa-coffee"></i>
+        </div>
+        <h3>Breakfast Buzz</h3>
+        <p>
+          Kickstart your day with community-favorite breakfast recipes. Swap
+          tips, share your morning must-tries, and discover new ways to fuel up.
+        </p>
+        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
+          >Explore Breakfast</a
+        >
+      </div>
+
+      <div class="category-card">
+        <div class="category-icon">
+          <i class="fas fa-utensils"></i>
+        </div>
+        <h3>Main Dish Meetup</h3>
+        <p>
+          Gather 'round for hearty mains! Join fellow home-chefs to rate top
+          recipes, trade secret techniques, and find your next dinner hero.
+        </p>
+        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
+          >Explore Mains</a
+        >
+      </div>
+
+      <div class="category-card">
+        <div class="category-icon">
+          <i class="fas fa-glass-martini-alt"></i>
+        </div>
+        <h3>Sip & Share</h3>
+        <p>
+          From smoothies to cocktails, mix it up with our drink-loving
+          community. Share your signature sips and try what everyone's talking
+          about.
+        </p>
+        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
+          >Explore Drinks</a
+        >
+      </div>
+
+      <div class="category-card">
+        <div class="category-icon">
+          <i class="fas fa-cookie"></i>
+        </div>
+        <h3>Dessert Delights</h3>
+        <p>
+          End on a sweet note—discover desserts that our members can't stop
+          baking. Post your next sugar rush and browse crowd-pleasing treats.
+        </p>
+        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
+          >Explore Desserts</a
+        >
+      </div>
+    </section>
+
+    <section class="story-section">
+      <div class="story-content">
+        <h2 class="tagline">Nourish Your Family, Delight Your Senses</h2>
+        <p class="intro-text">
+          At Chefly, we believe that wholesome, healthy food should always taste
+          amazing. From vibrant salads to hearty mains, our chef-curated recipes
+          fuse local ingredients with global inspiration—so every meal feels
+          both comforting and exciting.
+        </p>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-content">
+        <div class="about-image">
+          <img
+            src="https://media-cdn.tripadvisor.com/media/photo-s/1b/66/e7/b8/chef-at-work.jpg"
+            alt="Chef at work"
+          />
+        </div>
+        <div class="about-text">
+          <div class="content-block">
+            <h2 class="typing-title">Our Story</h2>
+            <p class="typing-text"></p>
+          </div>
+          <div class="cta-container">
+            <a href="{{ url_for('famous_dishes') }}" class="cta-button">
+              Explore recipes <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {% include 'footer.html' %}
+  </body>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const storyText =
+        "What began as a small weekend pop-up has blossomed into a movement for better home-cooking. Rooted in our city's rich culinary traditions, we pair farm-fresh produce with inventive techniques to bring restaurant-quality dishes to your table. Along the way, we've built a community of passionate home-chefs who share tips, swap recipes, and inspire each other to eat—and live—better.";
+      const missionText =
+        "To make healthy eating effortless and inspiring for families everywhere. We're here to simplify meal planning, spark your creativity, and ensure that every dish you serve is packed with flavor and nutrition.";
+      const storyTitle = "Our Story";
+      const missionTitle = "Our Mission";
+
+      const typingTitle = document.querySelector(".typing-title");
+      const typingText = document.querySelector(".typing-text");
+
+      let currentContent = "story";
+      let currentIndex = 0;
+      let isDeleting = false;
+      let currentText = storyText;
+      let currentTitle = storyTitle;
+
+      function typeText() {
+        if (currentIndex === 0 && !isDeleting) {
+          // Start typing new content
+          currentText = currentContent === "story" ? storyText : missionText;
+          currentTitle = currentContent === "story" ? storyTitle : missionTitle;
+          typingTitle.textContent = currentTitle;
+        }
+
+        if (!isDeleting && currentIndex < currentText.length) {
+          // Typing
+          typingText.textContent = currentText.substring(0, currentIndex + 1);
+          currentIndex++;
+          setTimeout(typeText, 30);
+        } else if (isDeleting && currentIndex > 0) {
+          // Deleting
+          typingText.textContent = currentText.substring(0, currentIndex - 1);
+          currentIndex--;
+          setTimeout(typeText, 15);
+        } else if (!isDeleting && currentIndex === currentText.length) {
+          // Finished typing, wait before deleting
+          isDeleting = true;
+          setTimeout(typeText, 2000);
+        } else if (isDeleting && currentIndex === 0) {
+          // Finished deleting, switch content
+          isDeleting = false;
+          currentContent = currentContent === "story" ? "mission" : "story";
+          setTimeout(typeText, 500);
+        }
+      }
+
+      // Start the typing animation
+      typeText();
+    });
+  </script>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/navbar.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="navbar_container">
+      <div class="left_section">
+        <div class="logo_container">
+          <a href="{{ url_for('home')}}">
+            <img
+              src="{{url_for('static', filename='images/logo.png')}}"
+              alt="Chefly Logo"
+              class="logo"
+            />
+          </a>
+        </div>
+      </div>
+
+      <div class="middle_section">
+        <a href="{{ url_for('about')}}" class="nav_link">About</a>
+        <a href="{{ url_for('contact')}}" class="nav_link">Contact</a>
+        <a href="{{ url_for('famous_dishes')}}" class="nav_link"
+          >Famous Dishes</a
+        >
+        <!-- <a href="{{ url_for('generate_recipe') }}" class="nav_link">Generate Recipe</a> -->
+
+      </div>
+
+      <div class="right_section">
+        <a href="{{ url_for('upload_form')}}" class="nav_link">Upload</a>
+        <form
+          action="{{ url_for('search') }}"
+          method="GET"
+          class="search_container"
+        >
+          <i class="fas fa-search search_icon"></i>
+          <input
+            type="text"
+            name="q"
+            placeholder="Search for recipes..."
+            class="search_input"
+            id="searchInput"
+          />
+        </form>
+        <a href="#" class="favorite_icon">
+          <i class="far fa-heart"></i>
+        </a>
+
+        {% if current_user.is_authenticated %}
+        <span class="username">{{ current_user.username }}</span>
+        <a href="{{ url_for('logout')}}" class="login_btn">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login')}}" class="login_btn">Login</a>
+        {% endif %}
+      </div>
+      <div class="hamburger_menu">
+        <i class="fa-solid fa-bars"> </i>
+      </div>
+    </div>
+    <div class="mobile_menu" id="mobileMenu">
+      <a href="{{ url_for('about') }}" class="nav_link">About</a>
+      <a href="{{ url_for('contact') }}" class="nav_link">Contact</a>
+      <a href="{{ url_for('famous_dishes') }}" class="nav_link"
+        >Famous Dishes</a
+      >
+      <a href="{{ url_for('upload_form') }}" class="nav_link">Upload</a>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('logout') }}" class="nav_link">Logout</a>
+      {% else %}
+      <a href="{{ url_for('login') }}" class="nav_link">Login</a>
+      {% endif %}
+    </div>
+
+    <script>
+      const hamburger = document.querySelector(".hamburger_menu");
+      const mobileMenu = document.getElementById("mobileMenu");
+
+      hamburger.addEventListener("click", function () {
+        mobileMenu.style.display =
+          mobileMenu.style.display === "flex" ? "none" : "flex";
+      });
+      const searchContainer = document.querySelector(".search_container");
+      const searchInput = document.getElementById("searchInput");
+
+      searchContainer.addEventListener("click", function (e) {
+        if (!this.classList.contains("expanded")) {
+          this.classList.add("expanded");
+          searchInput.focus();
+        }
+      });
+
+      document.addEventListener("click", function (e) {
+        if (!searchContainer.contains(e.target)) {
+          searchContainer.classList.remove("expanded");
+          searchInput.value = "";
+        }
+      });
+
+      searchContainer.addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+
+      // Handle form submission
+      searchContainer.addEventListener("submit", function (e) {
+        if (!searchInput.value.trim()) {
+          e.preventDefault();
+        }
+      });
+
+      // Handle enter key press
+      searchInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+          if (this.value.trim()) {
+            searchContainer.submit();
+          } else {
+            e.preventDefault();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

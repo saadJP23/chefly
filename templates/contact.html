@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact - Chefly</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/navbar.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/contact.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body>
+    {% include 'navbar.html' %}
+
+    <div class="contact-container">
+      <div class="contact-header">
+        <h1>Contact Us</h1>
+        <p class="subtitle">We'd love to hear from you</p>
+      </div>
+
+      <div class="contact-content">
+        <!-- Flash Messages (inside the form container) -->
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <div class="alert-box">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+        {% endif %} {% endwith %}
+
+        <form
+          class="contact-form"
+          action="{{ url_for('contact') }}"
+          method="POST"
+        >
+          {{ form.hidden_tag() }}
+
+          <div class="form-group">
+            {{ form.name.label }}<br />
+            {{ form.name(class="form-control") }}
+          </div>
+          <div class="form-group">
+            {{ form.email.label }}<br />
+            {{ form.email(class="form-control") }}
+          </div>
+          <div class="form-group">
+            {{ form.subject.label }}<br />
+            {{ form.subject(class="form-control") }}
+          </div>
+          <div class="form-group">
+            {{ form.message.label }}<br />
+            {{ form.message(class="form-control", rows="5") }}
+          </div>
+
+          {{ form.submit(class="submit-btn") }}
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
