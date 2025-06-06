@@ -52,6 +52,15 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
 app.config['RESET_SALT'] = os.getenv('RESET_SALT')
 mail = Mail(app)
 
+app = Flask(
+    __name__,
+    template_folder=os.path.join('..', 'frontend', 'templates'),
+    static_folder=os.path.join('..', 'frontend', 'static')
+)
+
+
+
+
 # Cloudinary Configuration
 cloudinary.config(
     cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
@@ -558,8 +567,12 @@ def predict_dish(image_data, model):
         
         
         # Map class index to dish name
-        with open('class_labels.json', 'r') as f:
-            class_labels = json.load(f)
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        json_path = os.path.join(BASE_DIR, 'class_labels.json')
+
+        with open(json_path, 'r') as f:
+           class_labels = json.load(f)
+
         
         predicted_class = np.argmax(predictions[0])
         confidence = predictions[0][predicted_class]
