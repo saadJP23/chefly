@@ -41,8 +41,12 @@ load_dotenv()
 
 
 
+app = Flask(
+    __name__,
+    template_folder=os.path.join('..', 'frontend', 'templates'),
+    static_folder=os.path.join('..', 'frontend', 'static')
+)
 
-app = Flask(__name__)
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT'))
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
@@ -52,11 +56,6 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
 app.config['RESET_SALT'] = os.getenv('RESET_SALT')
 mail = Mail(app)
 
-app = Flask(
-    __name__,
-    template_folder=os.path.join('..', 'frontend', 'templates'),
-    static_folder=os.path.join('..', 'frontend', 'static')
-)
 
 
 
@@ -705,4 +704,5 @@ if __name__ == '__main__':
     # Initialize the database
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=8080)
+
