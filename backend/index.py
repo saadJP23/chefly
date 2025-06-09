@@ -43,8 +43,8 @@ load_dotenv()
 
 app = Flask(
     __name__,
-    template_folder=os.path.join('..', 'frontend', 'templates'),
-    static_folder=os.path.join('..', 'frontend', 'static')
+    template_folder='../frontend/templates',
+    static_folder='../frontend/static'
 )
 
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
