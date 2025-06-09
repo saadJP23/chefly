@@ -537,7 +537,7 @@ def load_chef_model():
             return None
             
         # Load the model directly
-        model = tf.keras.models.load_model(model_path)
+        model = tf.keras.models.load_model('chefly_mobilenetv2.h5')
         print("Model loaded successfully")
         return model
         
@@ -567,7 +567,7 @@ def predict_dish(image_data, model):
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         json_path = os.path.join(BASE_DIR, 'class_labels.json')
 
-        with open(json_path, 'r') as f:
+        with open("class_labels.json", 'r') as f:
            class_labels = json.load(f)
 
         
