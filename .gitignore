@@ -8,8 +8,7 @@ venv*/
 
 # Ignore datasets and large files
 dataset/
-*.h5
 *.pkl
 *.ipynb_checkpoints
 __pycache__/
-chefly_mobilenetv2.h5
+
