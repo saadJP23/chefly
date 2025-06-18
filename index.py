@@ -452,7 +452,10 @@ def famous_dishes():
     except Exception as e:
         print(f"Error fetching famous dishes: {e}")
         flash("Error loading famous dishes", "error")
+
+
         return redirect(url_for('home'))
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -508,6 +511,10 @@ def predict_dish(image_data):
         return None, None, str(e) # Return None for prediction and confidence, and error message
 # --- END REVISED PREDICT_DISH FUNCTION ---
 
+
+@app.route('/trained_dishes', methods=["GET"])
+def trained_dishes():
+    return render_template('trained_dishes.html')
 
 @app.route('/upload', methods=['GET'])
 def upload_form():

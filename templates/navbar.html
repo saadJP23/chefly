@@ -30,14 +30,14 @@
         <a href="{{ url_for('about')}}" class="nav_link">About</a>
         <a href="{{ url_for('contact')}}" class="nav_link">Contact</a>
         <a href="{{ url_for('famous_dishes')}}" class="nav_link"
-          >Famous Dishes</a
-        >
+          >Famous Dishes</a>
+           <a href="{{ url_for('trained_dishes')}}" class="nav_link">Trained Dishes</a>
         <!-- <a href="{{ url_for('generate_recipe') }}" class="nav_link">Generate Recipe</a> -->
 
       </div>
 
       <div class="right_section">
-        <a href="{{ url_for('upload_form')}}" class="nav_link">Upload</a>
+        <a href="{{ url_for('upload_form')}}" class="nav_link">Predict Dish</a>
         <form
           action="{{ url_for('search') }}"
           method="GET"

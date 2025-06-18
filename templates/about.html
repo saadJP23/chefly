@@ -1,56 +1,36 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - Chefly</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>About Chefly</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; background: #fff8f0; color: #333; }
+        .about-container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        h1 { color: #d2691e; }
+        p { margin-bottom: 1.2em; }
+    </style>
 </head>
 <body>
-    {% include 'navbar.html' %}
-
     <div class="about-container">
-        <div class="about-header">
-            <h1>About Chefly</h1>
-            <p class="subtitle">Discover the world's flavors, one recipe at a time</p>
-        </div>
-
-        <div class="about-content">
-            <div class="mission-section">
-                <h2>Our Mission</h2>
-                <p>At Chefly, we believe that food brings people together. Our mission is to make cooking accessible, enjoyable, and educational for everyone, from beginners to experienced chefs.</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-utensils"></i>
-                    <h3>Curated Recipes</h3>
-                    <p>Carefully selected recipes from around the world</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-users"></i>
-                    <h3>Community Driven</h3>
-                    <p>Share and discover recipes with our growing community</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-book"></i>
-                    <h3>Easy to Follow</h3>
-                    <p>Step-by-step instructions for perfect results</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-globe"></i>
-                    <h3>Global Cuisine</h3>
-                    <p>Explore dishes from different cultures</p>
-                </div>
-            </div>
-
-            <div class="story-section">
-                <h2>Our Story</h2>
-                <p>Chefly was born from a passion for cooking and a desire to share the joy of creating delicious meals. We understand that everyone's cooking journey is unique, and we're here to support you every step of the way.</p>
-            </div>
-        </div>
+        <h1>Discover the World's Flavors</h1>
+        <p>Our mission: make cooking accessible and enjoyable for everyone.</p>
+        <p>Explore carefully selected recipes from different cultures, with step-by-step instructions for perfect results.</p>
+        <p>Join our community to share and discover new dishes.</p>
     </div>
 </body>
-</html> 
+</html> -->
+
+{% extends "base.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css')}}">
+<body>
+    <div class="about-container">
+        <h1>Discover the World's Flavors</h1>
+        <p>Our mission: make cooking accessible and enjoyable for everyone.</p>
+        <p>Explore carefully selected recipes from different cultures, with step-by-step instructions for perfect results.</p>
+        <p>Join our community to share and discover new dishes.</p>
+    </div>
+</body>
+{% endblock %} 

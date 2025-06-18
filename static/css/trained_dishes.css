@@ -1,0 +1,80 @@
+body {
+    background: #f8f6f3;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+.dishes-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    padding: 2.5em 2em 2em 2em;
+}
+
+.dishes-container h1 {
+    color: #d2691e;
+    font-size: 2.3em;
+    margin-bottom: 0.5em;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.dishes-container ul {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.2em;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dishes-container li {
+    background: #f3ede7;
+    padding: 1em 1.2em;
+    border-radius: 6px;
+    font-size: 1.15em;
+    transition: background 0.2s;
+    box-shadow: 0 1px 4px rgba(210, 105, 30, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 70px;
+    text-align: center;
+}
+
+.dishes-container li:hover {
+    background: #ffe5c2;
+}
+
+.dishes-container strong {
+    color: #b85c11;
+    letter-spacing: 0.5px;
+}
+
+@media (max-width: 900px) {
+    .dishes-container ul {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .dishes-container {
+        padding: 1.2em 0.5em;
+        max-width: 98vw;
+    }
+    .dishes-container h1 {
+        font-size: 1.5em;
+    }
+    .dishes-container ul {
+        grid-template-columns: 1fr;
+        gap: 0.7em;
+    }
+    .dishes-container li {
+        font-size: 1em;
+        padding: 0.7em 0.7em;
+    }
+}
