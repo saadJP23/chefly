@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chefly - Your Culinary Community</title>
+
+
+{% extends "base.html" %}
+{% block content %}
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/navbar.css') }}"
@@ -20,10 +18,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
-  </head>
-  <body>
-    {% include 'navbar.html' %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css')}}">
+<body>
     <section class="hero">
       <div class="hero-content">
         <h1>Join the Chefly Community</h1>
@@ -138,11 +134,9 @@
         </div>
       </div>
     </section>
-
-    {% include 'footer.html' %}
   </body>
 
-  <script>
+    <script>
     document.addEventListener("DOMContentLoaded", function () {
       const storyText =
         "What began as a small weekend pop-up has blossomed into a movement for better home-cooking. Rooted in our city's rich culinary traditions, we pair farm-fresh produce with inventive techniques to bring restaurant-quality dishes to your table. Along the way, we've built a community of passionate home-chefs who share tips, swap recipes, and inspire each other to eat—and live—better.";
@@ -194,4 +188,4 @@
       typeText();
     });
   </script>
-</html>
+{% endblock %} 

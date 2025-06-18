@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loading...</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f8f8f8;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+        .loading-text {
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <div class="loading-text">Generating your recipe, please wait...</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.createElement('form');
+            form.method = 'GET';
+            form.action = "{{ url_for('search') }}";
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'q';
+            input.value = "{{ query }}";
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        });
+    </script>
+</body>
+</html>

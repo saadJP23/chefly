@@ -26,6 +26,8 @@ from wtforms import StringField, SubmitField, TextAreaField
 import http.client as http_client
 from openai import OpenAI
 from tensorflow.keras.preprocessing.image import load_img, img_to_array # Redundant, but keeping for safety if used elsewhere
+from bing_image_downloader import downloader
+import glob
 
 load_dotenv()
 
@@ -198,7 +200,7 @@ def login():
 @app.route('/generate', methods=['GET', 'POST'])
 def generate_recipe():
     pass
-
+ 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
@@ -314,6 +316,8 @@ def search():
             Now, give me the ingredients and instructions for how to make '{query}'.
             """
 
+            
+
             resp = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
@@ -349,6 +353,18 @@ def search():
 
             image_url = response_image_gen.data[0].url
 
+            downloader.download(query, limit=1, output_dir='bing_images', adult_filter_off=True, force_replace=False, timeout=60)
+
+            image_path_list = glob.glob(f'bing_images/{query}/*')
+            image_path = image_path_list[0] if image_path_list else None
+            
+
+            if image_path:
+                upload_result = cloudinary.uploader.upload(image_path, folder="recipes", public_id=f"{query}_image")
+                image_url = upload_result['secure_url']
+            else:
+                image_url = None
+
         except json.JSONDecodeError:
             ingredients = []
             instructions = content
@@ -376,6 +392,9 @@ def search():
             'image_url': image_url,
             }
         results.append(gpt_recipe)
+
+        os.remove(image_path)
+        os.rmdir(f'bing_images/{query}')
 
         return render_template('search_results.html', results=results)
 
@@ -614,6 +633,11 @@ def from_json(value):
         return json.loads(value)
     except:
         return value
+
+@app.route('/start_search', methods=['POST'])
+def start_search():
+    query = request.form.get('q', '')
+    return render_template('loading_page.html', query=query)
 
 if __name__ == '__main__':
     # Initialize the database

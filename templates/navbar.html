@@ -39,8 +39,8 @@
       <div class="right_section">
         <a href="{{ url_for('upload_form')}}" class="nav_link">Predict Dish</a>
         <form
-          action="{{ url_for('search') }}"
-          method="GET"
+          action="{{ url_for('start_search') }}"
+          method="POST"
           class="search_container"
         >
           <i class="fas fa-search search_icon"></i>
