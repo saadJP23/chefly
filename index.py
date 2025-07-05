@@ -219,6 +219,33 @@ def api_login():
 def generate_recipe():
     pass
  
+from flask import request, jsonify
+
+@app.route('/api/register', methods=['POST'])
+def register_api():
+    data = request.get_json()
+
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+
+    # Validation
+    if not username or not email or not password:
+        return jsonify({"success": False, "message": "All fields are required."}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"success": False, "message": "Email already registered."}), 409
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({"success": False, "message": "Username already taken."}), 409
+
+    # Register new user
+    user = User(username=username, email=email)
+    user.set_password(password)
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Registration successful."}), 201
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if current_user.is_authenticated:
