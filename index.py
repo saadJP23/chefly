@@ -451,15 +451,13 @@ def search():
 
 
 
-from flask import jsonify, request
-import re, json, os, glob, requests
-from your_app.models import Recipe  # Replace with actual import
-from your_app import db  # Replace with actual import
-
-@app.route('/api/search', methods=['GET'])
+@app.route('/api/search', methods=['POST'])
 def api_search():
     try:
-        query = request.args.get('q', '')
+        try:
+        data = request.get_json()
+        query = data.get('query', '')
+
         if not query:
             return jsonify({"error": "Query cannot be empty."}), 400
 
