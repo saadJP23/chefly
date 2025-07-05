@@ -454,7 +454,7 @@ def search():
 @app.route('/api/search', methods=['POST'])
 def api_search():
     try:
-        try:
+        
         data = request.get_json()
         query = data.get('query', '')
 
