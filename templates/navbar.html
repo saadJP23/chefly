@@ -73,6 +73,23 @@
       <a href="{{ url_for('famous_dishes') }}" class="nav_link"
         >Famous Dishes</a
       >
+      <form
+    action="{{ url_for('start_search') }}"
+    method="POST"
+    class="search_container mobile_search_container"
+  >
+    <input
+      type="text"
+      name="q"
+      placeholder="Search for dishes..."
+      class="search_input mobile_search_input"
+      id="mobileSearchInput"
+    />
+    <button type="submit" class="mobile_search_button">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+
       <a href="{{ url_for('upload_form') }}" class="nav_link">Upload</a>
       {% if current_user.is_authenticated %}
       <a href="{{ url_for('logout') }}" class="nav_link">Logout</a>

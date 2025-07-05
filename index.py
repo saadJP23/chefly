@@ -29,6 +29,8 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array # Redund
 from bing_image_downloader import downloader
 import glob
 
+
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -197,6 +199,22 @@ def login():
     return render_template('login.html', form=form)
 
 
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        return jsonify({'message': 'Email not found'}), 404
+
+    if user and user.check_password(password):
+        return jsonify({'message': 'Login successful'}), 200
+
+    return jsonify({'message': 'Invalid password'}), 401
 @app.route('/generate', methods=['GET', 'POST'])
 def generate_recipe():
     pass

@@ -320,3 +320,44 @@
   font-weight: 500;
   font-size: 0.95rem;
 }
+
+.mobile_search_container {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px; /* Adjust padding as needed */
+  background-color: #f0f0f0; /* Light background for the search bar */
+  border-radius: 5px;
+  margin: 10px auto; /* Center it and add some vertical spacing */
+  width: 90%; /* Adjust width as needed */
+  max-width: 300px; /* Prevent it from getting too wide on tablets */
+}
+
+.mobile_search_input {
+  flex-grow: 1; /* Allows the input to take up available space */
+  border: none;
+  background: transparent;
+  padding: 8px;
+  font-size: 1rem;
+  outline: none; /* Remove outline on focus */
+}
+
+.mobile_search_input::placeholder {
+  color: #888;
+}
+
+.mobile_search_button {
+  background: none;
+  border: none;
+  color: #333; /* Color of the search icon */
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 5px; /* Space between input and button */
+}
+
+/* Add some margin to your existing nav_links in mobile_menu for better spacing */
+.mobile_menu .nav_link {
+  margin-bottom: 10px; /* Example spacing */
+  width: 100%; /* Make them full width for better tapping */
+  text-align: center;
+}
