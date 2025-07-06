@@ -516,7 +516,7 @@ def api_search():
             ))
             db.session.commit()
 
-            return jsonify(recipe), 201
+            return jsonify([recipe]), 201
 
         try:
             print("Calling GPT-turbo for recipe generation...")
@@ -614,7 +614,7 @@ def api_search():
         os.remove(image_path)
         os.rmdir(f'bing_images/{query}')
 
-        return jsonify(gpt_recipe), 201
+        return jsonify([gpt_recipe]), 201
 
     except Exception as e:
         print(f"Error in /api/search: {e}")
