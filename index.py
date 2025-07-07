@@ -127,6 +127,7 @@ class Image(db.Model):
 
 class TrainedDish(db.Model):
     __tablename__ = 'Trained_dish'
+    dish_id = db.Column(db.Int, primary_key=True)
     dish = db.Column(db.String(100), nullable=False)
 
 
