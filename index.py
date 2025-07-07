@@ -126,7 +126,7 @@ class Image(db.Model):
     url = db.Column(db.String(255), nullable=False)
 
 class TrainedDish(db.Model):
-    __tablename__ = 'Trained_dish'
+    __tablename__ = 'Trained_dishes'
     dish_id = db.Column(db.Int, primary_key=True)
     dish = db.Column(db.String(100), nullable=False)
 
