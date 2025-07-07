@@ -95,8 +95,8 @@ class Recipe(db.Model):
     name = db.Column(db.String(100), nullable=False)
     ingredients = db.Column(db.String(255), nullable=False)
     instructions = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(255), nullable=True) # Changed to nullable=True as GPT might not always generate
-    calories = db.Column(db.Integer, nullable=True) # Changed to nullable=True
+    image_url = db.Column(db.String(255), nullable=True)
+    calories = db.Column(db.Integer, nullable=True)
 
 # Forms
 class LoginForm(FlaskForm):
@@ -127,8 +127,8 @@ class Image(db.Model):
 
 class TrainedDish(db.Model):
     __tablename__ = 'Trained_dishes'
-    dish_id = db.Column(dish_id, db.Integer, primary_key=True)
-    dish = db.Column(dish, db.String(100), nullable=False)
+    dish_id = db.Column(db.Integer, primary_key=True)
+    dish = db.Column(db.String(100), nullable=False)
 
 
 # --- GLOBAL MODEL AND LABEL LOADING ---
