@@ -6,57 +6,11 @@
 <div class="dishes-container">
     <h1>My Trained Dishes</h1>
     <ul>
-        <li><strong>Ackee And Saltfish</strong></li>
-        <li><strong>Adobo</strong></li>
-        <li><strong>Aloo Keema</strong></li>
-        <li><strong>Arepas</strong></li>
-        <li><strong>Asado</strong></li>
-        <li><strong>Baklava</strong></li>
-        <li><strong>Banh Mi</strong></li>
-        <li><strong>Bhindi Masala</strong></li>
-        <li><strong>Bibimbap</strong></li>
-        <li><strong>Biryani</strong></li>
-        <li><strong>Bistecca Alla Fiorentina</strong></li>
-        <li><strong>Boeuf Bourguignon</strong></li>
-        <li><strong>Borscht</strong></li>
-        <li><strong>Bratwurst</strong></li>
-        <li><strong>Burgers</strong></li>
-        <li><strong>Ceviche</strong></li>
-        <li><strong>Cioppino</strong></li>
-        <li><strong>Clam Chowder</strong></li>
-        <li><strong>Congee</strong></li>
-        <li><strong>Coq Au Vin</strong></li>
-        <li><strong>Couscous</strong></li>
-        <li><strong>Croissant</strong></li>
-        <li><strong>Curry</strong></li>
-        <li><strong>Daal Fry</strong></li>
-        <li><strong>Dim Sum</strong></li>
-        <li><strong>Dosa</strong></li>
-        <li><strong>Empanadas</strong></li>
-        <li><strong>Enchiladas</strong></li>
-        <li><strong>Escargots</strong></li>
-        <li><strong>Falafel</strong></li>
-        <li><strong>Feijoada</strong></li>
-        <li><strong>Fish And Chips</strong></li>
-        <li><strong>French Fries</strong></li>
-        <li><strong>Gazpacho</strong></li>
-        <li><strong>Gelato</strong></li>
-        <li><strong>Goulash</strong></li>
-        <li><strong>Gravlax</strong></li>
-        <li><strong>Green Curry</strong></li>
-        <li><strong>Gumbo</strong></li>
-        <li><strong>Gyoza</strong></li>
-        <li><strong>Gyros</strong></li>
-        <li><strong>Haggis</strong></li>
-        <li><strong>Haleem</strong></li>
-        <li><strong>Hot Dogs</strong></li>
-        <li><strong>Hummus</strong></li>
-        <li><strong>Irish Stew</strong></li>
-        <li><strong>Pizza</strong></li>
-        <li><strong>Ramen</strong></li>
-        <li><strong>Sushi</strong></li>
-        <li><strong>Takoyaki</strong></li>
+        {% for dish in dishes%}
+        <li><strong>{{ dish.name}}</strong></li>
+        {% endfor %}
     </ul>
+
 </div>
 
 {% endblock %}

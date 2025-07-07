@@ -125,6 +125,11 @@ class Image(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(255), nullable=False)
 
+class TrainedDish(db.Model):
+    __tablename__ = 'Trained_dish'
+    dish = db.Column(db.String(100), nullable=False)
+
+
 # --- GLOBAL MODEL AND LABEL LOADING ---
 # Global variables for the model and class labels to avoid reloading on every request
 chefly_model = None
@@ -748,9 +753,21 @@ def predict_dish(image_data):
 # --- END REVISED PREDICT_DISH FUNCTION ---
 
 
+@app.route('/api/trained', methods=["GET"])
+def trained_dishes():
+
+    dish = TrainedDish.query().all()
+
+    return jsonify([dish]), 200
+
+
 @app.route('/trained_dishes', methods=["GET"])
 def trained_dishes():
-    return render_template('trained_dishes.html')
+
+    query = TrainedDish.query.all()
+
+
+    return render_template('trained_dishes.html', dishes = query)
 
 @app.route('/upload', methods=['GET'])
 def upload_form():
