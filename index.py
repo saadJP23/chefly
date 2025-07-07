@@ -127,8 +127,8 @@ class Image(db.Model):
 
 class TrainedDish(db.Model):
     __tablename__ = 'Trained_dishes'
-    dish_id = db.Column(db.Int, primary_key=True)
-    dish = db.Column(db.String(100), nullable=False)
+    dish_id = db.Column(dish_id, db.Int, primary_key=True)
+    dish = db.Column(dish, db.String(100), nullable=False)
 
 
 # --- GLOBAL MODEL AND LABEL LOADING ---
