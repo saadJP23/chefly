@@ -755,7 +755,7 @@ def predict_dish(image_data):
 
 
 @app.route('/api/trained', methods=["GET"])
-def trained_dishes():
+def api_trained_dishes():
 
     dish = TrainedDish.query().all()
 
