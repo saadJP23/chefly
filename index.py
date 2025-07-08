@@ -756,19 +756,34 @@ def predict_dish(image_data):
 
 @app.route('/api/trained', methods=["GET"])
 def api_trained_dishes():
+    query = TrainedDish.query.all()
 
-    dish = TrainedDish.query().all()
+    dishes = []
+    for dish in query:
+        dish_data = {
+            'id': dish.dish_id,
+            "dish": dish.dish
+        }
+        dishes.append(dish_data)
 
-    return jsonify([dish]), 200
+    return jsonify(dishes), 200
+    return jsonify(dishes), 200
 
 
 @app.route('/trained_dishes', methods=["GET"])
 def trained_dishes():
 
     query = TrainedDish.query.all()
+    dishes = []
+    for dish in query:
+        dish_data = {
+            'id': dish.dish_id,
+            "dish": dish.dish
+        }
+        dishes.append(dish_data)
 
 
-    return render_template('trained_dishes.html', dishes = query)
+    return render_template('trained_dishes.html', dishes = dishes)
 
 @app.route('/upload', methods=['GET'])
 def upload_form():
@@ -878,4 +893,5 @@ if __name__ == '__main__':
     # Initialize the database
     with app.app_context():
         db.create_all()
-    app.run(host='0.0.0.0', port=8080)
+        
+    app.run(host='0.0.0.0', port=8080, debug=True)
