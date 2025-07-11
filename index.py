@@ -97,6 +97,11 @@ class Recipe(db.Model):
     instructions = db.Column(db.Text, nullable=False)
     image_url = db.Column(db.String(255), nullable=True)
     calories = db.Column(db.Integer, nullable=True)
+    
+class Favorites(db.Model):
+    __tablename__ = 'Favorites'
+    UserId = db.Column(db.Integer, primary_key=True)
+    RecipeId = db.Column(db.Integer, primary_key=True)
 
 # Forms
 class LoginForm(FlaskForm):
@@ -454,6 +459,35 @@ def search():
         flash(f"Error searching recipes: {str(e)}")
         return redirect(url_for('home'))
 
+
+@app.route('/api/favorites', methods=["GET"])
+def api_favorites():
+    user_id = request.args.get('user_id') 
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+
+    dishes = db.session.execute("""
+        SELECT r.* FROM favorites f
+        INNER JOIN recipe r ON f.RecipeId = r.id
+        WHERE f.UserId = :user_id
+    """, {'user_id': user_id}).fetchall()
+
+
+    dish_list = [{
+        'id': row.id,
+        'name': row.name,
+        'ingredients': row.ingredients,
+        'instructions': row.instructions,
+        'image_url': row.image_url,
+        'calories': row.calories
+    } for row in dishes]
+
+    return jsonify(dish_list)
+
+
+
+
+    
 
 
 
