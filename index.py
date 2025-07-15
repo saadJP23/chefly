@@ -918,13 +918,14 @@ def api_view_recipe(recipe_id):
         return jsonify({
             "id": recipe.id,
             "title": recipe.title,
-            "ingredients": recipe.ingredients,  # Make sure this is a list or properly parsed string
+            "ingredients": recipe.ingredients.split(',') if isinstance(recipe.ingredients, str) else recipe.ingredients,
             "instructions": recipe.instructions,
             "calories": recipe.calories,
-            "image_url": recipe.image_url  # assuming this exists
-        })
+            "image_url": recipe.image_url
+        }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.template_filter('from_json')
 def from_json(value):
