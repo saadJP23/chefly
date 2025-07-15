@@ -914,17 +914,29 @@ from flask import jsonify
 @app.route('/api/recipe/<int:recipe_id>', methods=['GET'])
 def api_view_recipe(recipe_id):
     try:
-        recipe = Recipe.query.get_or_404(recipe_id)
+        recipe = Recipe.query.get(recipe_id)
+        if not recipe:
+            return jsonify({"error": "Recipe not found"}), 404
+
+        # Clean up ingredient list
+        ingredients_raw = recipe.ingredients
+        if isinstance(ingredients_raw, str):
+            ingredients = [ing.strip().strip('"').strip("'") for ing in ingredients_raw.split(',')]
+        else:
+            ingredients = ingredients_raw
+
         return jsonify({
             "id": recipe.id,
-            "name": recipe.title,
-            "ingredients": recipe.ingredients.split(',') if isinstance(recipe.ingredients, str) else recipe.ingredients,
+            "name": recipe.name,
+            "ingredients": ingredients,
             "instructions": recipe.instructions,
             "calories": recipe.calories,
             "image_url": recipe.image_url
-        }), 200  # ✅ Explicitly return 200 OK
+        }), 200
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # ✅ Internal Server Error if something goes wrong
+        return jsonify({"error": str(e)}), 500
+
 
 
 
