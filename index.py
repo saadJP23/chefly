@@ -801,7 +801,6 @@ def api_trained_dishes():
         dishes.append(dish_data)
 
     return jsonify(dishes), 200
-    return jsonify(dishes), 200
 
 
 @app.route('/trained_dishes', methods=["GET"])
@@ -909,6 +908,23 @@ def view_recipe(recipe_id):
     except Exception as e:
         flash(f"Error loading recipe: {str(e)}", "error")
         return redirect(url_for('home'))
+    
+from flask import jsonify
+
+@app.route('/api/recipe/<int:recipe_id>', methods=['GET'])
+def api_view_recipe(recipe_id):
+    try:
+        recipe = Recipe.query.get_or_404(recipe_id)
+        return jsonify({
+            "id": recipe.id,
+            "title": recipe.title,
+            "ingredients": recipe.ingredients,  # Make sure this is a list or properly parsed string
+            "instructions": recipe.instructions,
+            "calories": recipe.calories,
+            "image_url": recipe.image_url  # assuming this exists
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.template_filter('from_json')
 def from_json(value):
