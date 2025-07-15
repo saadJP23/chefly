@@ -917,14 +917,15 @@ def api_view_recipe(recipe_id):
         recipe = Recipe.query.get_or_404(recipe_id)
         return jsonify({
             "id": recipe.id,
-            "title": recipe.title,
+            "name": recipe.title,
             "ingredients": recipe.ingredients.split(',') if isinstance(recipe.ingredients, str) else recipe.ingredients,
             "instructions": recipe.instructions,
             "calories": recipe.calories,
             "image_url": recipe.image_url
-        }), 200
+        }), 200  # ✅ Explicitly return 200 OK
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500  # ✅ Internal Server Error if something goes wrong
+
 
 
 @app.template_filter('from_json')
