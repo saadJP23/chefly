@@ -14,6 +14,10 @@ import cloudinary.uploader
 import cloudinary.api
 import re
 import random
+import functools
+import html
+import shutil
+from urllib.parse import quote
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -134,6 +138,107 @@ class TrainedDish(db.Model):
     __tablename__ = 'Trained_dishes'
     dish_id = db.Column(db.Integer, primary_key=True)
     dish = db.Column(db.String(100), nullable=False)
+
+
+def _class_labels_json_path():
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'class_labels.json')
+
+
+@functools.lru_cache(maxsize=1)
+def _cached_class_labels_tuple():
+    path = _class_labels_json_path()
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    if not isinstance(data, list):
+        raise ValueError('class_labels.json must contain a JSON array of strings')
+    return tuple(data)
+
+
+def load_class_labels():
+    """Trained class names from class_labels.json (same source as the CNN labels)."""
+    return list(_cached_class_labels_tuple())
+
+
+def trained_dish_rows_from_labels():
+    """dict rows with keys id, dish — matches trained_dishes.html and /api/trained."""
+    return [{'id': idx, 'dish': label} for idx, label in enumerate(load_class_labels(), start=1)]
+
+
+def placeholder_dish_image(label_display: str) -> str:
+    """Small inline SVG so famous-dish cards work without external image hosts."""
+    t = html.escape(label_display[:40], quote=True)
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400">'
+        f'<rect fill="#e8dcc4" width="100%" height="100%"/>'
+        f'<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" '
+        f'fill="#4a3728" font-size="20" font-family="sans-serif">{t}</text></svg>'
+    )
+    return 'data:image/svg+xml,' + quote(svg)
+
+
+def famous_dish_cards_from_labels(count=5):
+    """Card dicts for famous_dishes.html: name, link, image_url, calories, instructions."""
+    labels = load_class_labels()
+    if not labels:
+        return []
+    picks = random.sample(labels, k=min(count, len(labels)))
+    cards = []
+    for label in picks:
+        display = label.replace('_', ' ')
+        cards.append({
+            'name': display,
+            'link': url_for('search', q=display),
+            'image_url': placeholder_dish_image(display),
+            'calories': '—',
+            'instructions': f'Explore recipes and ideas for {display}.',
+        })
+    return cards
+
+
+def _openai_message_text(resp):
+    if not resp or not getattr(resp, 'choices', None):
+        return ''
+    msg = resp.choices[0].message
+    return (getattr(msg, 'content', None) or '').strip()
+
+
+def _strip_markdown_json_fences(text):
+    t = (text or '').strip()
+    if not t.startswith('```'):
+        return t
+    lines = t.splitlines()
+    if lines and lines[0].startswith('```'):
+        lines = lines[1:]
+    while lines and lines[-1].strip() == '```':
+        lines = lines[:-1]
+    return '\n'.join(lines).strip()
+
+
+def _normalize_gpt_recipe_payload(recipe_data):
+    """Coerce GPT JSON into safe DB/template types (avoids None passed to string APIs)."""
+    if not isinstance(recipe_data, dict):
+        return [], '', None
+    raw_ing = recipe_data.get('ingredients', [])
+    if raw_ing is None or not isinstance(raw_ing, list):
+        raw_ing = []
+    ingredients = [str(x) for x in raw_ing if x is not None]
+    ins = recipe_data.get('instructions', None)
+    instructions = '' if ins is None else str(ins)
+    cal = recipe_data.get('calory', None)
+    if cal is not None and not isinstance(cal, (str, int, float)):
+        cal = str(cal)
+    return ingredients, instructions, cal
+
+
+def _cleanup_bing_download_dir(query, image_path=None):
+    if image_path and os.path.isfile(image_path):
+        try:
+            os.remove(image_path)
+        except OSError:
+            pass
+    bing_dir = os.path.join('bing_images', query)
+    if os.path.isdir(bing_dir):
+        shutil.rmtree(bing_dir, ignore_errors=True)
 
 
 # --- GLOBAL MODEL AND LABEL LOADING ---
@@ -356,6 +461,13 @@ def search():
             return render_template('search_results.html', results=results)
 
         # If not found in Spoonacular, try GPT
+        image_path = None
+        content = ''
+        ingredients = []
+        instructions = ''
+        calories = None
+        image_url = None
+
         try:
             print("Calling GPT-turbo for recipe generation...")
             prompt = f"""
@@ -372,60 +484,75 @@ def search():
             Now, give me the ingredients and instructions for how to make '{query}'.
             """
 
-            
-
             resp = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
             )
-            content = resp.choices[0].message.content
+            content = _openai_message_text(resp)
+            if not content:
+                raise ValueError(
+                    "OpenAI returned empty recipe text (refusal, empty completion, or API issue). "
+                    "Check OPENAI_API_KEY and try again."
+                )
+
             flash("✅ Generated by GPT-turbo", "warning")
 
-            conn = http_client.HTTPConnection('google.serper.dev')
-            payload = json.dumps({
-                "q": query})
-            headers = {
-                'X-API-KEY': os.getenv('SERPER_API_KEY'),
-                'Content-Type': 'application/json'
-            }
+            if os.getenv('SERPER_API_KEY'):
+                try:
+                    conn = http_client.HTTPConnection('google.serper.dev')
+                    payload = json.dumps({"q": query})
+                    headers = {
+                        'X-API-KEY': os.getenv('SERPER_API_KEY'),
+                        'Content-Type': 'application/json',
+                    }
+                    conn.request("POST", "/search", payload, headers)
+                    conn.getresponse().read()
+                except Exception as serper_err:
+                    print(f"Serper step skipped: {serper_err}")
 
-            conn.request("POST", "/search", payload, headers)
+            cleaned = _strip_markdown_json_fences(content)
+            recipe_data = json.loads(cleaned)
+            ingredients, instructions, calories = _normalize_gpt_recipe_payload(recipe_data)
 
-            res = conn.getresponse()
-
-            raw_bytes = res.read()
-            data = raw_bytes.decode('utf-8')
-
-            recipe_data = json.loads(content)
-            ingredients = recipe_data.get("ingredients", [])
-            instructions = recipe_data.get("instructions", "")
-            calories = recipe_data.get("calory", None) # Changed to None for consistency
-
-            response_image_gen = client.images.generate(
-                prompt=f"Recipe image for {query}",
-                n=1,
-                size="1024x1024"
-            )
-
-            image_url = response_image_gen.data[0].url
-
-            downloader.download(query, limit=1, output_dir='bing_images', adult_filter_off=True, force_replace=False, timeout=60)
-
-            image_path_list = glob.glob(f'bing_images/{query}/*')
-            image_path = image_path_list[0] if image_path_list else None
-            
-
-            if image_path:
-                upload_result = cloudinary.uploader.upload(image_path, folder="recipes", public_id=f"{query}_image")
-                image_url = upload_result['secure_url']
-            else:
+            try:
+                response_image_gen = client.images.generate(
+                    prompt=f"Recipe image for {query}",
+                    n=1,
+                    size="1024x1024",
+                )
+                image_url = response_image_gen.data[0].url
+            except Exception as img_err:
+                print(f"OpenAI image generation skipped: {img_err}")
                 image_url = None
+
+            try:
+                downloader.download(
+                    query,
+                    limit=1,
+                    output_dir='bing_images',
+                    adult_filter_off=True,
+                    force_replace=False,
+                    timeout=60,
+                )
+                image_path_list = glob.glob(f'bing_images/{query}/*')
+                image_path = image_path_list[0] if image_path_list else None
+                if image_path:
+                    upload_result = cloudinary.uploader.upload(
+                        image_path,
+                        folder="recipes",
+                        public_id=f"{query}_image",
+                    )
+                    image_url = upload_result['secure_url']
+            except Exception as dl_err:
+                print(f"Bing / Cloudinary download step skipped: {dl_err}")
 
         except json.JSONDecodeError:
             ingredients = []
-            instructions = content
-            image_url = None # Set to None if JSON parsing fails
+            instructions = (content or "").strip() or "Could not parse recipe JSON from the model."
             calories = None
+            image_url = None
+        finally:
+            _cleanup_bing_download_dir(query, image_path)
 
         new = Recipe(
             name=query,
@@ -448,9 +575,6 @@ def search():
             'image_url': image_url,
             }
         results.append(gpt_recipe)
-
-        os.remove(image_path)
-        os.rmdir(f'bing_images/{query}')
 
         return render_template('search_results.html', results=results)
 
@@ -558,6 +682,13 @@ def api_search():
 
             return jsonify([recipe]), 201
 
+        image_path = None
+        content = ''
+        ingredients = []
+        instructions = ''
+        calories = None
+        image_url = None
+
         try:
             print("Calling GPT-turbo for recipe generation...")
             prompt = f"""
@@ -574,60 +705,73 @@ def api_search():
             Now, give me the ingredients and instructions for how to make '{query}'.
             """
 
-            
-
             resp = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
             )
-            content = resp.choices[0].message.content
-            flash("✅ Generated by GPT-turbo", "warning")
+            content = _openai_message_text(resp)
+            if not content:
+                raise ValueError(
+                    "OpenAI returned empty recipe text (refusal, empty completion, or API issue). "
+                    "Check OPENAI_API_KEY and try again."
+                )
 
-            conn = http_client.HTTPConnection('google.serper.dev')
-            payload = json.dumps({
-                "q": query})
-            headers = {
-                'X-API-KEY': os.getenv('SERPER_API_KEY'),
-                'Content-Type': 'application/json'
-            }
+            if os.getenv('SERPER_API_KEY'):
+                try:
+                    conn = http_client.HTTPConnection('google.serper.dev')
+                    payload = json.dumps({"q": query})
+                    headers = {
+                        'X-API-KEY': os.getenv('SERPER_API_KEY'),
+                        'Content-Type': 'application/json',
+                    }
+                    conn.request("POST", "/search", payload, headers)
+                    conn.getresponse().read()
+                except Exception as serper_err:
+                    print(f"Serper step skipped: {serper_err}")
 
-            conn.request("POST", "/search", payload, headers)
+            cleaned = _strip_markdown_json_fences(content)
+            recipe_data = json.loads(cleaned)
+            ingredients, instructions, calories = _normalize_gpt_recipe_payload(recipe_data)
 
-            res = conn.getresponse()
-
-            raw_bytes = res.read()
-            data = raw_bytes.decode('utf-8')
-
-            recipe_data = json.loads(content)
-            ingredients = recipe_data.get("ingredients", [])
-            instructions = recipe_data.get("instructions", "")
-            calories = recipe_data.get("calory", None) # Changed to None for consistency
-
-            response_image_gen = client.images.generate(
-                prompt=f"Recipe image for {query}",
-                n=1,
-                size="1024x1024"
-            )
-
-            image_url = response_image_gen.data[0].url
-
-            downloader.download(query, limit=1, output_dir='bing_images', adult_filter_off=True, force_replace=False, timeout=60)
-
-            image_path_list = glob.glob(f'bing_images/{query}/*')
-            image_path = image_path_list[0] if image_path_list else None
-            
-
-            if image_path:
-                upload_result = cloudinary.uploader.upload(image_path, folder="recipes", public_id=f"{query}_image")
-                image_url = upload_result['secure_url']
-            else:
+            try:
+                response_image_gen = client.images.generate(
+                    prompt=f"Recipe image for {query}",
+                    n=1,
+                    size="1024x1024",
+                )
+                image_url = response_image_gen.data[0].url
+            except Exception as img_err:
+                print(f"OpenAI image generation skipped: {img_err}")
                 image_url = None
+
+            try:
+                downloader.download(
+                    query,
+                    limit=1,
+                    output_dir='bing_images',
+                    adult_filter_off=True,
+                    force_replace=False,
+                    timeout=60,
+                )
+                image_path_list = glob.glob(f'bing_images/{query}/*')
+                image_path = image_path_list[0] if image_path_list else None
+                if image_path:
+                    upload_result = cloudinary.uploader.upload(
+                        image_path,
+                        folder="recipes",
+                        public_id=f"{query}_image",
+                    )
+                    image_url = upload_result['secure_url']
+            except Exception as dl_err:
+                print(f"Bing / Cloudinary download step skipped: {dl_err}")
 
         except json.JSONDecodeError:
             ingredients = []
-            instructions = content
-            image_url = None # Set to None if JSON parsing fails
+            instructions = (content or "").strip() or "Could not parse recipe JSON from the model."
             calories = None
+            image_url = None
+        finally:
+            _cleanup_bing_download_dir(query, image_path)
 
         new = Recipe(
             name=query,
@@ -650,9 +794,6 @@ def api_search():
             'image_url': image_url,
             }
         results.append(gpt_recipe)
-
-        os.remove(image_path)
-        os.rmdir(f'bing_images/{query}')
 
         return jsonify([gpt_recipe]), 201
 
@@ -706,30 +847,11 @@ def contact():
 @app.route('/famous-dishes')
 def famous_dishes():
     try:
-        # Get total count of recipes
-        total_recipes = Recipe.query.count()
-
-        if total_recipes == 0:
-            flash("No recipes available", "info")
-            return redirect(url_for('home'))
-
-        # Generate 5 random indices
-        random_indices = random.sample(range(total_recipes), min(5, total_recipes))
-
-        # Fetch random recipes
-        random_dishes = []
-        for idx in random_indices:
-            dish = Recipe.query.offset(idx).first()
-            if dish:
-                random_dishes.append(dish)
-
-        return render_template('famous_dishes.html', dishes=random_dishes)
-
+        dishes = famous_dish_cards_from_labels(5)
+        return render_template('famous_dishes.html', dishes=dishes)
     except Exception as e:
         print(f"Error fetching famous dishes: {e}")
         flash("Error loading famous dishes", "error")
-
-
         return redirect(url_for('home'))
 
 
@@ -790,33 +912,13 @@ def predict_dish(image_data):
 
 @app.route('/api/trained', methods=["GET"])
 def api_trained_dishes():
-    query = TrainedDish.query.all()
-
-    dishes = []
-    for dish in query:
-        dish_data = {
-            'id': dish.dish_id,
-            "dish": dish.dish
-        }
-        dishes.append(dish_data)
-
-    return jsonify(dishes), 200
+    return jsonify(trained_dish_rows_from_labels()), 200
 
 
 @app.route('/trained_dishes', methods=["GET"])
 def trained_dishes():
-
-    query = TrainedDish.query.all()
-    dishes = []
-    for dish in query:
-        dish_data = {
-            'id': dish.dish_id,
-            "dish": dish.dish
-        }
-        dishes.append(dish_data)
-
-
-    return render_template('trained_dishes.html', dishes = dishes)
+    dishes = trained_dish_rows_from_labels()
+    return render_template('trained_dishes.html', dishes=dishes)
 
 @app.route('/upload', methods=['GET'])
 def upload_form():

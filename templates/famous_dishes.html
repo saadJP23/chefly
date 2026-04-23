@@ -10,7 +10,7 @@
     <div class="dishes-grid">
         {% if dishes %}
             {% for dish in dishes %}
-            <a href="{{ url_for('view_recipe', recipe_id=dish.id) }}" class="dish-card-link">
+            <a href="{{ dish.link }}" class="dish-card-link">
                 <div class="dish-card">
                     <div class="dish-image">
                         <img src="{{ dish.image_url }}" alt="{{ dish.name }}"/>
@@ -19,11 +19,16 @@
                         <h3>{{ dish.name }}</h3>
                         <div class="dish-meta">
                             <span class="calories">
-                                <i class="fas fa-fire"></i> {{ dish.calories }} calories
+                                <i class="fas fa-fire"></i>
+                                {% if dish.calories == '—' %}
+                                    —
+                                {% else %}
+                                    {{ dish.calories }} calories
+                                {% endif %}
                             </span>
                         </div>
-                        <p class="dish-description">{{ dish.instructions[:100] }}...</p>
-                        <div class="view-recipe-text">View Recipe</div>
+                        <p class="dish-description">{{ dish.instructions[:100] }}{% if dish.instructions|length > 100 %}...{% endif %}</p>
+                        <div class="view-recipe-text">Search recipes</div>
                     </div>
                 </div>
             </a>
