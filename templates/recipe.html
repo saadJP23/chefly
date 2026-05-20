@@ -1,36 +1,117 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ recipe.name }} — Chefly{% endblock %}
+{% block meta_description %}Cook {{ recipe.name }} with ingredients, instructions, timing, nutrition, ratings, and reviews on Chefly.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
 {% block content %}
+<section class="page-body" style="padding-top: calc(var(--nav-h) + 32px);">
+    <div class="container recipe-detail">
+        <a href="{{ url_for('search') }}" class="back-button reveal">
+            <i class="fa-solid fa-arrow-left"></i> Back to Search
+        </a>
 
-<link rel ='stylesheet' href="{{ url_for('static', filename='css/recipe.css') }}">
-
-    <div class="container">
-        <a href="{{ url_for('search') }}" class="back-button">← Back to Search</a>
-        
-        <div class="recipe-header">
-            <h1 class="recipe-title">{{ recipe.name }}</h1>
-            <div class="recipe-meta">
-                <span>Calories: {{ recipe.calories }}</span>
-                
+        <article class="recipe-header-card reveal">
+            <img src="{{ recipe.image_url or placeholder_dish_image(recipe.name) }}" alt="{{ recipe.name }}" class="recipe-image" loading="lazy">
+            <div class="recipe-header-body">
+                <h1 class="recipe-title">{{ recipe.name }}</h1>
+                <div class="recipe-meta">
+                    <span><i class="fa-solid fa-star"></i> {{ rating or 'New' }}{% if rating_count %} ({{ rating_count }}){% endif %}</span>
+                    <span><i class="fa-solid fa-fire-flame-curved"></i> {{ recipe.calories or '—' }} calories</span>
+                    <span><i class="fa-regular fa-clock"></i> {{ (recipe.prep_time_mins or 0) + (recipe.cook_time_mins or 0) or '—' }} min</span>
+                    <span><i class="fa-solid fa-utensils"></i> {{ recipe.servings or 4 }} servings</span>
+                    {% if recipe.category %}<span><i class="fa-solid fa-tag"></i> {{ recipe.category }}</span>{% endif %}
+                    {% if recipe.diet_type %}<span><i class="fa-solid fa-leaf"></i> {{ recipe.diet_type }}</span>{% endif %}
+                </div>
+                <div class="recipe-actions">
+                    {% if current_user.is_authenticated %}
+                    <button class="btn btn--primary btn--sm favorite-toggle" data-recipe-id="{{ recipe.id }}">
+                        <i class="fa-{{ 'solid' if is_favorite else 'regular' }} fa-heart"></i>
+                        <span>{{ 'Saved' if is_favorite else 'Save' }}</span>
+                    </button>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn--primary btn--sm"><i class="fa-regular fa-heart"></i> Save</a>
+                    {% endif %}
+                    <button class="btn btn--ghost btn--sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
+                    <button class="btn btn--ghost btn--sm" onclick="navigator.share ? navigator.share({title: document.title, url: location.href}) : navigator.clipboard.writeText(location.href)">
+                        <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
+                </div>
             </div>
-            <img src="{{ recipe.image_url }}" alt="{{ recipe.name }}" class="recipe-image">
-        </div>
+        </article>
 
-        <div class="recipe-section">
+        <section class="recipe-section reveal">
+            <h2 class="section-title">Nutrition</h2>
+            <div class="nutrition-grid">
+                <div><strong>{{ recipe.protein_g or '—' }}g</strong><span>Protein</span></div>
+                <div><strong>{{ recipe.carbs_g or '—' }}g</strong><span>Carbs</span></div>
+                <div><strong>{{ recipe.fat_g or '—' }}g</strong><span>Fat</span></div>
+                <div><strong>{{ recipe.fiber_g or '—' }}g</strong><span>Fiber</span></div>
+            </div>
+        </section>
+
+        <section class="recipe-section reveal" data-delay="100">
             <h2 class="section-title">Ingredients</h2>
             <ul class="ingredients-list">
                 {% for ingredient in recipe.ingredients|from_json %}
-                    <li>{{ ingredient }}</li>
+                <li>{{ ingredient }}</li>
                 {% endfor %}
             </ul>
-        </div>
+        </section>
 
-        <div class="recipe-section">
+        <section class="recipe-section reveal" data-delay="200">
             <h2 class="section-title">Instructions</h2>
             <div class="instructions">{{ recipe.instructions }}</div>
-        </div>
+        </section>
 
+        <section class="recipe-section reveal" data-delay="300">
+            <h2 class="section-title">Ratings & Reviews</h2>
+            {% if current_user.is_authenticated %}
+            <form action="{{ url_for('rate_recipe', recipe_id=recipe.id) }}" method="POST" class="review-form">
+                <label for="score">Your rating</label>
+                <select id="score" name="score" class="form-control" required>
+                    <option value="5">5 stars</option>
+                    <option value="4">4 stars</option>
+                    <option value="3">3 stars</option>
+                    <option value="2">2 stars</option>
+                    <option value="1">1 star</option>
+                </select>
+                <textarea name="comment" class="form-control" rows="3" placeholder="What should other cooks know?"></textarea>
+                <button type="submit" class="btn btn--primary">Post Review</button>
+            </form>
+            {% else %}
+            <p><a href="{{ url_for('login') }}">Sign in</a> to review this recipe.</p>
+            {% endif %}
+
+            <div class="reviews-list">
+                {% for review in reviews %}
+                <article class="review-item">
+                    <strong>{{ review.user.username }}</strong>
+                    <span>{{ review.score }} / 5</span>
+                    {% if review.comment %}<p>{{ review.comment }}</p>{% endif %}
+                </article>
+                {% else %}
+                <p>No reviews yet.</p>
+                {% endfor %}
+            </div>
+        </section>
     </div>
-
+</section>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+document.querySelector('.favorite-toggle')?.addEventListener('click', async function () {
+  const body = new URLSearchParams({ recipe_id: this.dataset.recipeId });
+  const response = await fetch('{{ url_for("toggle_favorite") }}', { method: 'POST', body });
+  const data = await response.json();
+  if (data.success) {
+    this.querySelector('i').className = data.favorited ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+    this.querySelector('span').textContent = data.favorited ? 'Saved' : 'Save';
+  }
+});
+</script>
+{% endblock %}

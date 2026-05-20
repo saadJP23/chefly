@@ -1,74 +1,82 @@
 {% extends "base.html" %}
 
-{% block title %}Sign Up - Chefly{% endblock %}
+{% block title %}Sign Up — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="text-center">Sign Up</h3>
-                </div>
-                <div class="card-body">
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-                    <form method="POST" action="{{ url_for('signup') }}">
-                        {{ form.hidden_tag() }}
-                        <div class="mb-3">
-                            {{ form.username.label(class="form-label") }}
-                            {{ form.username(class="form-control") }}
-                            {% if form.username.errors %}
-                                {% for error in form.username.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control") }}
-                            {% if form.email.errors %}
-                                {% for error in form.email.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ form.password.label(class="form-label") }}
-                            {{ form.password(class="form-control") }}
-                            {% if form.password.errors %}
-                                {% for error in form.password.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        <div class="mb-3">
-                            {{ form.confirm_password.label(class="form-label") }}
-                            {{ form.confirm_password(class="form-control") }}
-                            {% if form.confirm_password.errors %}
-                                {% for error in form.confirm_password.errors %}
-                                    <span class="text-danger">{{ error }}</span>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                        <div class="d-grid">
-                            {{ form.submit(class="signup-btn") }}
-                        </div>
-                    </form>
-
-                </div>
+<section class="auth-page auth-page--reverse">
+    <div class="auth-page__form-wrap">
+        <div class="auth-card reveal">
+            <div class="auth-card__header">
+                <h1>Create account</h1>
+                <p>Join thousands of home cooks on Chefly</p>
             </div>
+
+            <form method="POST" action="{{ url_for('signup') }}" class="auth-form" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.username.label(class="form-label") }}
+                    <div class="input-icon-wrap">
+                        <!-- <i class="fa-regular fa-user" aria-hidden="true"></i> -->
+                        {{ form.username(class="form-control", placeholder="Your username", autocomplete="username") }}
+                    </div>
+                    {% if form.username.errors %}
+                        {% for error in form.username.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label(class="form-label") }}
+                    <div class="input-icon-wrap">
+                        <!-- <i class="fa-regular fa-envelope" aria-hidden="true"></i> -->
+                        {{ form.email(class="form-control", placeholder="you@example.com", autocomplete="email") }}
+                    </div>
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password.label(class="form-label") }}
+                    <div class="input-icon-wrap">
+                        <!-- <i class="fa-solid fa-lock" aria-hidden="true"></i> -->
+                        {{ form.password(class="form-control", placeholder="Min. 8 characters", autocomplete="new-password") }}
+                    </div>
+                    {% if form.password.errors %}
+                        {% for error in form.password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    <div class="input-icon-wrap">
+                        <!-- <i class="fa-solid fa-lock" aria-hidden="true"></i> -->
+                        {{ form.confirm_password(class="form-control", placeholder="Confirm password", autocomplete="new-password") }}
+                    </div>
+                    {% if form.confirm_password.errors %}
+                        {% for error in form.confirm_password.errors %}<span class="text-danger">{{ error }}</span>{% endfor %}
+                    {% endif %}
+                </div>
+
+                {{ form.submit(class="btn btn--primary btn--block btn--lg", value="Create Account") }}
+            </form>
+
+            <p class="auth-card__footer">
+                Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+            </p>
         </div>
     </div>
-</div>
+
+    <div class="auth-page__visual" aria-hidden="true">
+        <div class="auth-page__visual-inner">
+            <span class="auth-page__badge"><i class="fa-solid fa-sparkles"></i> Free to join</span>
+            <h2>Start cooking smarter today</h2>
+            <p>Create your free account and unlock AI-powered recipe discovery, dish identification, and more.</p>
+        </div>
+    </div>
+</section>
 {% endblock %}

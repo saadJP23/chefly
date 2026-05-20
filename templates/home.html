@@ -1,191 +1,397 @@
-
-
 {% extends "base.html" %}
+
+{% block title %}Chefly — AI-Powered Cooking Community{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
 {% block content %}
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/navbar.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/home.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/footer.css') }}"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
-<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css')}}">
-<body>
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Join the Chefly Community</h1>
-        <h2>Share recipes, swap tips, and spice up your cooking.</h2>
-        <p>
-          From family-favorite classics to daring new creations, connect with
-          fellow food lovers, save your must-try dishes, and get inspired daily.
-          Upload your own recipes, rate others, and watch your kitchen
-          confidence soar.
-        </p>
-        <a href="{{ url_for('famous_dishes') }}" class="cta-button"
-          >Get Cooking Together</a
-        >
+
+<!-- ── HERO ─────────────────────────────────────────────── -->
+<section class="hero" aria-label="Welcome to Chefly">
+  <div class="hero-blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="hero-inner">
+    <!-- Content side -->
+    <div class="hero-content">
+      <div class="hero-eyebrow"><i class="fa-solid fa-sparkles"></i> AI-Powered Cooking</div>
+
+      <h1 class="hero__title">Cook<br>with<br><em>confidence.</em></h1>
+
+      <p class="hero__subtitle">
+        Discover thousands of recipes, identify dishes instantly with AI, and get meal plans tailored to your taste — all in one beautiful kitchen companion.
+      </p>
+
+      <form action="{{ url_for('start_search') }}" method="POST" class="hero-search hero-search-form" role="search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" name="q" placeholder='Try "creamy pasta", "vegan curry"…' aria-label="Search recipes">
+        <button type="submit" class="btn btn--primary btn--sm">Find Recipes</button>
+      </form>
+
+      <div class="hero-chips" aria-label="Quick searches">
+        <a href="{{ url_for('start_search') }}?q=sushi" class="chip">🍣 Sushi</a>
+        <a href="{{ url_for('start_search') }}?q=pasta" class="chip">🍝 Pasta</a>
+        <a href="{{ url_for('start_search') }}?q=curry" class="chip">🍛 Curry</a>
+        <a href="{{ url_for('start_search') }}?q=salad" class="chip">🥗 Salads</a>
+        <a href="{{ url_for('start_search') }}?q=dessert" class="chip">🍰 Desserts</a>
       </div>
-      <div class="hero-image">
+
+      <div class="hero__ctas">
+        <a href="{{ url_for('famous_dishes') }}" class="btn btn--primary btn--lg">
+          <i class="fa-solid fa-fire"></i> Explore Recipes
+        </a>
+        <a href="{{ url_for('upload_form') }}" class="btn btn--ghost btn--lg">
+          <i class="fa-solid fa-camera"></i> Identify a Dish
+        </a>
+      </div>
+
+      <div class="hero__stats">
+        <div class="hero-stat"><strong>10K+</strong><span>Recipes</span></div>
+        <div class="hero-stat__divider" aria-hidden="true"></div>
+        <div class="hero-stat"><strong>500K+</strong><span>Home Cooks</span></div>
+        <div class="hero-stat__divider" aria-hidden="true"></div>
+        <div class="hero-stat"><strong>4.9★</strong><span>Avg Rating</span></div>
+      </div>
+    </div>
+
+    <!-- Visual side -->
+    <div class="hero__visual">
+      <div class="hero__image-frame">
         <img
           src="{{ url_for('static', filename='images/hero_img.png') }}"
-          alt="Chefly Community"
-        />
-      </div>
-    </section>
-
-    <section class="categories">
-      <div class="category-card">
-        <div class="category-icon">
-          <i class="fas fa-coffee"></i>
-        </div>
-        <h3>Breakfast Buzz</h3>
-        <p>
-          Kickstart your day with community-favorite breakfast recipes. Swap
-          tips, share your morning must-tries, and discover new ways to fuel up.
-        </p>
-        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
-          >Explore Breakfast</a
-        >
-      </div>
-
-      <div class="category-card">
-        <div class="category-icon">
-          <i class="fas fa-utensils"></i>
-        </div>
-        <h3>Main Dish Meetup</h3>
-        <p>
-          Gather 'round for hearty mains! Join fellow home-chefs to rate top
-          recipes, trade secret techniques, and find your next dinner hero.
-        </p>
-        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
-          >Explore Mains</a
-        >
-      </div>
-
-      <div class="category-card">
-        <div class="category-icon">
-          <i class="fas fa-glass-martini-alt"></i>
-        </div>
-        <h3>Sip & Share</h3>
-        <p>
-          From smoothies to cocktails, mix it up with our drink-loving
-          community. Share your signature sips and try what everyone's talking
-          about.
-        </p>
-        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
-          >Explore Drinks</a
-        >
-      </div>
-
-      <div class="category-card">
-        <div class="category-icon">
-          <i class="fas fa-cookie"></i>
-        </div>
-        <h3>Dessert Delights</h3>
-        <p>
-          End on a sweet note—discover desserts that our members can't stop
-          baking. Post your next sugar rush and browse crowd-pleasing treats.
-        </p>
-        <a href="{{ url_for('famous_dishes') }}" class="category-btn"
-          >Explore Desserts</a
-        >
-      </div>
-    </section>
-
-    <section class="story-section">
-      <div class="story-content">
-        <h2 class="tagline">Nourish Your Family, Delight Your Senses</h2>
-        <p class="intro-text">
-          At Chefly, we believe that wholesome, healthy food should always taste
-          amazing. From vibrant salads to hearty mains, our chef-curated recipes
-          fuse local ingredients with global inspiration—so every meal feels
-          both comforting and exciting.
-        </p>
-      </div>
-    </section>
-
-    <section class="about-section">
-      <div class="about-content">
-        <div class="about-image">
-          <img
-            src="https://media-cdn.tripadvisor.com/media/photo-s/1b/66/e7/b8/chef-at-work.jpg"
-            alt="Chef at work"
-          />
-        </div>
-        <div class="about-text">
-          <div class="content-block">
-            <h2 class="typing-title">Our Story</h2>
-            <p class="typing-text"></p>
+          alt="Delicious food prepared with Chefly"
+          width="560" height="672"
+          loading="eager">
+        <div class="hero__badge">
+          <div class="badge-avatars" aria-hidden="true">
+            <div class="badge-av">JK</div>
+            <div class="badge-av">MR</div>
+            <div class="badge-av">TA</div>
           </div>
-          <div class="cta-container">
-            <a href="{{ url_for('famous_dishes') }}" class="cta-button">
-              Explore recipes <i class="fas fa-arrow-right"></i>
-            </a>
+          <div class="badge-text">
+            <p>500,000+ happy cooks</p>
+            <span>Join the community today</span>
           </div>
         </div>
       </div>
-    </section>
-  </body>
 
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const storyText =
-        "What began as a small weekend pop-up has blossomed into a movement for better home-cooking. Rooted in our city's rich culinary traditions, we pair farm-fresh produce with inventive techniques to bring restaurant-quality dishes to your table. Along the way, we've built a community of passionate home-chefs who share tips, swap recipes, and inspire each other to eat—and live—better.";
-      const missionText =
-        "To make healthy eating effortless and inspiring for families everywhere. We're here to simplify meal planning, spark your creativity, and ensure that every dish you serve is packed with flavor and nutrition.";
-      const storyTitle = "Our Story";
-      const missionTitle = "Our Mission";
+      <div class="hero__float-card hero__float-card--1">
+        <i class="fa-solid fa-wand-magic-sparkles fire-ic"></i>
+        <div>
+          <strong>AI Recipe</strong>
+          <span>Generated in seconds</span>
+        </div>
+      </div>
+      <div class="hero__float-card hero__float-card--2">
+        <i class="fa-solid fa-leaf leaf-ic"></i>
+        <div>
+          <strong>Nutrition Tracked</strong>
+          <span>Eat smart, feel great</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      const typingTitle = document.querySelector(".typing-title");
-      const typingText = document.querySelector(".typing-text");
+<!-- ── CATEGORIES ─────────────────────────────────────────── -->
+<section class="section categories-section">
+  <div class="container">
+    <div class="section-header section-header--center reveal">
+      <span class="section-eyebrow"><i class="fa-solid fa-grid-2"></i> Browse by Category</span>
+      <h2 class="section-title">Something for every meal</h2>
+    </div>
 
-      let currentContent = "story";
-      let currentIndex = 0;
-      let isDeleting = false;
-      let currentText = storyText;
-      let currentTitle = storyTitle;
+    <div class="category-grid reveal" data-delay="100">
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-mug-hot"></i></span>
+        <span>Breakfast</span>
+      </a>
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-utensils"></i></span>
+        <span>Main Dishes</span>
+      </a>
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-fish"></i></span>
+        <span>Seafood</span>
+      </a>
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-carrot"></i></span>
+        <span>Vegan</span>
+      </a>
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-cookie"></i></span>
+        <span>Desserts</span>
+      </a>
+      <a href="{{ url_for('famous_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-glass-water"></i></span>
+        <span>Drinks</span>
+      </a>
+      <a href="{{ url_for('upload_form') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-camera"></i></span>
+        <span>AI Identify</span>
+      </a>
+      <a href="{{ url_for('trained_dishes') }}" class="category-pill">
+        <span class="category-pill__icon"><i class="fa-solid fa-brain"></i></span>
+        <span>Trained Dishes</span>
+      </a>
+    </div>
+  </div>
+</section>
 
-      function typeText() {
-        if (currentIndex === 0 && !isDeleting) {
-          // Start typing new content
-          currentText = currentContent === "story" ? storyText : missionText;
-          currentTitle = currentContent === "story" ? storyTitle : missionTitle;
-          typingTitle.textContent = currentTitle;
-        }
+<!-- ── TRENDING ─────────────────────────────────────────────── -->
+<section class="section" id="trending">
+  <div class="container">
+    <div class="section-header section-header--center reveal">
+      <span class="section-eyebrow"><i class="fa-solid fa-fire"></i> Trending Now</span>
+      <h2 class="section-title">Popular recipes this week</h2>
+      <p class="section-subtitle">Hand-picked favorites from our community — rated, timed, and ready to cook tonight.</p>
+    </div>
 
-        if (!isDeleting && currentIndex < currentText.length) {
-          // Typing
-          typingText.textContent = currentText.substring(0, currentIndex + 1);
-          currentIndex++;
-          setTimeout(typeText, 30);
-        } else if (isDeleting && currentIndex > 0) {
-          // Deleting
-          typingText.textContent = currentText.substring(0, currentIndex - 1);
-          currentIndex--;
-          setTimeout(typeText, 15);
-        } else if (!isDeleting && currentIndex === currentText.length) {
-          // Finished typing, wait before deleting
-          isDeleting = true;
-          setTimeout(typeText, 2000);
-        } else if (isDeleting && currentIndex === 0) {
-          // Finished deleting, switch content
-          isDeleting = false;
-          currentContent = currentContent === "story" ? "mission" : "story";
-          setTimeout(typeText, 500);
-        }
-      }
+    <div class="recipe-grid">
+      <article class="recipe-card reveal" data-delay="100">
+        <a href="{{ url_for('famous_dishes') }}" class="recipe-card__link">
+          <div class="recipe-card__media">
+            <div class="img-skeleton" aria-hidden="true"></div>
+            <img src="{{ url_for('static', filename='images/sushi2.jpeg') }}" alt="Salmon Sushi Rolls" loading="lazy">
+            <div class="recipe-card__media-overlay"></div>
+            <span class="recipe-card__badge">Trending</span>
+            <button class="recipe-card__fav" aria-label="Save to favorites" onclick="event.preventDefault();this.querySelector('i').classList.toggle('fa-solid');this.querySelector('i').classList.toggle('fa-regular');"><i class="fa-regular fa-heart"></i></button>
+          </div>
+          <div class="recipe-card__body">
+            <h3>Salmon Sushi Rolls</h3>
+            <div class="recipe-card__meta">
+              <span><i class="fa-solid fa-star"></i> 4.9</span>
+              <span><i class="fa-regular fa-clock"></i> 45 min</span>
+              <span><i class="fa-solid fa-fire-flame-curved"></i> 320 cal</span>
+            </div>
+            <p>Fresh salmon, seasoned rice, and crisp nori — restaurant quality at home.</p>
+          </div>
+        </a>
+        <div class="recipe-card__footer">
+          <div class="recipe-author"><div class="recipe-author-av">YK</div><span>Yuki K.</span></div>
+          <button class="recipe-cook-btn" onclick="window.location='{{ url_for('famous_dishes') }}'">Cook this →</button>
+        </div>
+      </article>
 
-      // Start the typing animation
-      typeText();
-    });
-  </script>
-{% endblock %} 
+      <article class="recipe-card reveal" data-delay="200">
+        <a href="{{ url_for('famous_dishes') }}" class="recipe-card__link">
+          <div class="recipe-card__media">
+            <div class="img-skeleton" aria-hidden="true"></div>
+            <img src="{{ url_for('static', filename='images/Tempura.jpeg') }}" alt="Crispy Tempura" loading="lazy">
+            <div class="recipe-card__media-overlay"></div>
+            <button class="recipe-card__fav" aria-label="Save to favorites" onclick="event.preventDefault();this.querySelector('i').classList.toggle('fa-solid');this.querySelector('i').classList.toggle('fa-regular');"><i class="fa-regular fa-heart"></i></button>
+          </div>
+          <div class="recipe-card__body">
+            <h3>Crispy Tempura</h3>
+            <div class="recipe-card__meta">
+              <span><i class="fa-solid fa-star"></i> 4.8</span>
+              <span><i class="fa-regular fa-clock"></i> 30 min</span>
+              <span><i class="fa-solid fa-fire-flame-curved"></i> 280 cal</span>
+            </div>
+            <p>Light, airy batter with perfectly fried shrimp and seasonal vegetables.</p>
+          </div>
+        </a>
+        <div class="recipe-card__footer">
+          <div class="recipe-author"><div class="recipe-author-av">HN</div><span>Hana N.</span></div>
+          <button class="recipe-cook-btn" onclick="window.location='{{ url_for('famous_dishes') }}'">Cook this →</button>
+        </div>
+      </article>
+
+      <article class="recipe-card reveal" data-delay="300">
+        <a href="{{ url_for('famous_dishes') }}" class="recipe-card__link">
+          <div class="recipe-card__media">
+            <div class="img-skeleton" aria-hidden="true"></div>
+            <img src="{{ url_for('static', filename='images/White karahi.jpeg') }}" alt="White Karahi" loading="lazy">
+            <div class="recipe-card__media-overlay"></div>
+            <span class="recipe-card__badge recipe-card__badge--new">New</span>
+            <button class="recipe-card__fav" aria-label="Save to favorites" onclick="event.preventDefault();this.querySelector('i').classList.toggle('fa-solid');this.querySelector('i').classList.toggle('fa-regular');"><i class="fa-regular fa-heart"></i></button>
+          </div>
+          <div class="recipe-card__body">
+            <h3>White Karahi</h3>
+            <div class="recipe-card__meta">
+              <span><i class="fa-solid fa-star"></i> 4.7</span>
+              <span><i class="fa-regular fa-clock"></i> 55 min</span>
+              <span><i class="fa-solid fa-fire-flame-curved"></i> 410 cal</span>
+            </div>
+            <p>Creamy Pakistani classic with tender chicken and aromatic spices.</p>
+          </div>
+        </a>
+        <div class="recipe-card__footer">
+          <div class="recipe-author"><div class="recipe-author-av">AR</div><span>Amira R.</span></div>
+          <button class="recipe-cook-btn" onclick="window.location='{{ url_for('famous_dishes') }}'">Cook this →</button>
+        </div>
+      </article>
+
+      <article class="recipe-card reveal" data-delay="400">
+        <a href="{{ url_for('famous_dishes') }}" class="recipe-card__link">
+          <div class="recipe-card__media">
+            <div class="img-skeleton" aria-hidden="true"></div>
+            <img src="{{ url_for('static', filename='images/Thai Street Vendor Salmon Skewers.jpeg') }}" alt="Thai Salmon Skewers" loading="lazy">
+            <div class="recipe-card__media-overlay"></div>
+            <button class="recipe-card__fav" aria-label="Save to favorites" onclick="event.preventDefault();this.querySelector('i').classList.toggle('fa-solid');this.querySelector('i').classList.toggle('fa-regular');"><i class="fa-regular fa-heart"></i></button>
+          </div>
+          <div class="recipe-card__body">
+            <h3>Thai Salmon Skewers</h3>
+            <div class="recipe-card__meta">
+              <span><i class="fa-solid fa-star"></i> 4.9</span>
+              <span><i class="fa-regular fa-clock"></i> 25 min</span>
+              <span><i class="fa-solid fa-fire-flame-curved"></i> 245 cal</span>
+            </div>
+            <p>Street-food inspired skewers with sweet chili glaze and fresh herbs.</p>
+          </div>
+        </a>
+        <div class="recipe-card__footer">
+          <div class="recipe-author"><div class="recipe-author-av">ST</div><span>Siriporn T.</span></div>
+          <button class="recipe-cook-btn" onclick="window.location='{{ url_for('famous_dishes') }}'">Cook this →</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="trending__cta reveal">
+      <a href="{{ url_for('famous_dishes') }}" class="btn btn--outline btn--lg">
+        View All Recipes <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── AI FEATURES ─────────────────────────────────────────── -->
+<section class="section ai-features" id="ai-features">
+  <div class="container">
+    <div class="section-header section-header--center reveal">
+      <span class="section-eyebrow"><i class="fa-solid fa-robot"></i> Powered by AI</span>
+      <h2 class="section-title">Your intelligent kitchen assistant</h2>
+      <p class="section-subtitle">From smart search to image recognition — Chefly uses cutting-edge AI to elevate every meal.</p>
+    </div>
+
+    <div class="ai-grid">
+      <article class="ai-card reveal" data-delay="100">
+        <div class="ai-card__stripe" style="background:linear-gradient(90deg,#ff6b35,#f59e0b);"></div>
+        <div class="ai-card__icon" style="background:rgba(255,107,53,0.15);color:#ff6b35;"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <h3>AI Recipe Search</h3>
+        <p>Describe what you're craving in plain English and get perfectly matched recipes instantly.</p>
+        <a href="{{ url_for('home') }}#main-content" class="ai-card__link">Try it now <i class="fa-solid fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ai-card reveal" data-delay="200">
+        <div class="ai-card__stripe" style="background:linear-gradient(90deg,#8b5cf6,#ec4899);"></div>
+        <div class="ai-card__icon" style="background:rgba(139,92,246,0.15);color:#a78bfa;"><i class="fa-solid fa-camera"></i></div>
+        <h3>Food Image Recognition</h3>
+        <p>Snap a photo of any dish and our AI model identifies it with confidence scores in seconds.</p>
+        <a href="{{ url_for('upload_form') }}" class="ai-card__link">Upload a photo <i class="fa-solid fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ai-card reveal" data-delay="300">
+        <div class="ai-card__stripe" style="background:linear-gradient(90deg,#10b981,#06b6d4);"></div>
+        <div class="ai-card__icon" style="background:rgba(16,185,129,0.15);color:#34d399;"><i class="fa-solid fa-heart"></i></div>
+        <h3>Personalized Picks</h3>
+        <p>Get recipe suggestions tailored to your taste, dietary needs, and cooking skill level.</p>
+        <a href="{{ url_for('famous_dishes') }}" class="ai-card__link">Discover more <i class="fa-solid fa-arrow-right"></i></a>
+      </article>
+
+      <article class="ai-card reveal" data-delay="400">
+        <div class="ai-card__stripe" style="background:linear-gradient(90deg,#3b82f6,#06b6d4);"></div>
+        <div class="ai-card__icon" style="background:rgba(59,130,246,0.15);color:#60a5fa;"><i class="fa-solid fa-chart-pie"></i></div>
+        <h3>Nutrition Tracking</h3>
+        <p>See calories, macros, and health insights for every recipe — eat well without the guesswork.</p>
+        <a href="{{ url_for('famous_dishes') }}" class="ai-card__link">Learn more <i class="fa-solid fa-arrow-right"></i></a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ─────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header section-header--center reveal">
+      <span class="section-eyebrow"><i class="fa-solid fa-map"></i> How It Works</span>
+      <h2 class="section-title">Ready to cook in 3 simple steps</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step reveal" data-delay="100">
+        <div class="how-step__num">1</div>
+        <h3>Search or Snap</h3>
+        <p>Type what you're craving or upload a photo of a dish you'd like to recreate.</p>
+      </div>
+      <div class="how-step reveal" data-delay="200">
+        <div class="how-step__num">2</div>
+        <h3>AI Does the Magic</h3>
+        <p>Our AI finds the perfect recipe, identifies ingredients, and calculates nutrition.</p>
+      </div>
+      <div class="how-step reveal" data-delay="300">
+        <div class="how-step__num">3</div>
+        <h3>Cook &amp; Share</h3>
+        <p>Follow step-by-step instructions, rate it, and share your creation with the community.</p>
+      </div>
+      <div class="how-step reveal" data-delay="400">
+        <div class="how-step__num">4</div>
+        <h3>Grow Your Skills</h3>
+        <p>Track your cooking history, unlock achievements, and level up your culinary game.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── REVIEWS ─────────────────────────────────────────────── -->
+<section class="section reviews-section">
+  <div class="container">
+    <div class="section-header section-header--center reveal">
+      <span class="section-eyebrow"><i class="fa-solid fa-star"></i> Loved by Cooks</span>
+      <h2 class="section-title">What our community says</h2>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card reveal" data-delay="100">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"Chefly completely changed how I approach weeknight dinners. The AI search is honestly magic — I just type what I feel like eating and it nails it every time."</p>
+        <div class="review-author">
+          <div class="review-av review-av-1">JK</div>
+          <div><div class="review-name">Jamie K.</div><div class="review-role">Home Cook, Tokyo</div></div>
+        </div>
+      </div>
+      <div class="review-card reveal" data-delay="200">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"The dish identification feature is incredible. I took a photo of something I ate in Seoul and it gave me the full recipe with authentic ingredients. Mind-blowing."</p>
+        <div class="review-author">
+          <div class="review-av review-av-2">MR</div>
+          <div><div class="review-name">Maya R.</div><div class="review-role">Food Blogger, London</div></div>
+        </div>
+      </div>
+      <div class="review-card reveal" data-delay="300">
+        <div class="review-stars">★★★★★</div>
+        <p class="review-text">"As a nutritionist, I love how Chefly tracks macros automatically. My clients use it daily and the personalized recommendations have been spot on."</p>
+        <div class="review-author">
+          <div class="review-av review-av-3">TA</div>
+          <div><div class="review-name">Dr. Tanya A.</div><div class="review-role">Nutritionist, Sydney</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── NEWSLETTER ────────────────────────────────────────────── -->
+<section class="section newsletter-section">
+  <div class="container">
+    <div class="newsletter-wrap reveal">
+      <div class="newsletter-content">
+        <span class="section-eyebrow"><i class="fa-solid fa-envelope"></i> Newsletter</span>
+        <h2>Get weekly recipe inspiration</h2>
+        <p>Join 50,000+ home cooks receiving chef-curated recipes, AI tips, and exclusive deals every week.</p>
+        <form class="newsletter-form" action="#" method="post" novalidate>
+          <input type="email" placeholder="Enter your email address" aria-label="Email address" required>
+          <button type="submit" class="btn btn--primary">Subscribe</button>
+        </form>
+        <p class="newsletter-fine">No spam, ever. Unsubscribe anytime.</p>
+      </div>
+      <div class="newsletter-visual" aria-hidden="true">
+        <i class="fa-solid fa-bell"></i>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

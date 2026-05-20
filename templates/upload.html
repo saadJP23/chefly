@@ -1,92 +1,97 @@
 {% extends "base.html" %}
+
+{% block title %}AI Dish Identification — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css')}}">
-<div class="upload-container">
-    <div class="upload-header">
-        <h1>Upload Dish Image</h1>
-        <p class="subtitle">Upload an image of your dish and we'll identify it for you</p>
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-camera"></i> AI Powered</span>
+        <h1>Identify Your Dish</h1>
+        <p>Upload a photo and our AI model will recognize it with confidence scores in seconds.</p>
     </div>
+</section>
 
-    <div class="upload-form">
-        <form id="uploadForm" enctype="multipart/form-data">
-            <div class="file-input-container">
-                <input type="file" name="file" id="image" accept="image/*" required>
-                <label for="image" class="file-input-label">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <span>Choose an image</span>
-                </label>
+<section class="page-body">
+    <div class="container upload-zone">
+        <div class="upload-form-card reveal">
+            <form id="uploadForm" enctype="multipart/form-data" novalidate>
+                <div class="file-input-container">
+                    <input type="file" name="file" id="image" accept="image/*" required>
+                    <label for="image" class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Drag & drop or click to choose an image</span>
+                        <small style="color: var(--c-text-muted);">PNG, JPG, GIF up to 16MB</small>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn--primary btn--block btn--lg upload-button">
+                    <i class="fas fa-wand-magic-sparkles"></i> Identify Dish
+                </button>
+            </form>
+
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;" aria-live="polite">
+                <i class="fas fa-spinner fa-spin fa-3x"></i>
+                <p>Processing image, please wait...</p>
             </div>
-            <button type="submit" class="upload-button">
-                <i class="fas fa-search"></i> Identify Dish
-            </button>
-        </form>
 
-        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-            <i class="fas fa-spinner fa-spin fa-3x"></i>
-            <p>Processing image, please wait...</p>
-        </div>
-
-        <div id="result" class="result-container" style="display: none;">
-            <div class="prediction-result">
-                <h2>Prediction Result</h2>
-                <div class="image-preview">
-                    <img id="previewImage" src="" alt="Uploaded dish">
-                </div>
-                <div class="prediction-details">
-                    <p>Predicted Dish: <span id="predictedDish"></span></p>
-                    <p>Confidence: <span id="confidence"></span>%</p>
-                </div>
-                <div class="action-buttons">
-                    <button id="searchRecipe" class="search-recipe-btn">Search Recipe</button>
-                    <button id="tryAgain" class="try-again-btn">Try Another Image</button>
+            <div id="result" class="result-container" style="display: none;" aria-live="polite">
+                <div class="prediction-result">
+                    <h2>Prediction Result</h2>
+                    <div class="image-preview">
+                        <img id="previewImage" src="" alt="Uploaded dish">
+                    </div>
+                    <div class="prediction-details">
+                        <p>Predicted Dish: <span id="predictedDish"></span></p>
+                        <p>Confidence: <span id="confidence"></span>%</p>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="searchRecipe" type="button" class="btn btn--primary search-recipe-btn">Search Recipe</button>
+                        <button id="tryAgain" type="button" class="btn btn--ghost try-again-btn">Try Another Image</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-document.getElementById('image').addEventListener('change', function(e) {
+document.getElementById('image').addEventListener('change', function (e) {
     const fileName = e.target.files[0]?.name;
     if (fileName) {
         document.querySelector('.file-input-label span').textContent = fileName;
     }
 });
 
-document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+document.getElementById('uploadForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
     const resultContainer = document.getElementById('result');
     const loadingIndicator = document.getElementById('loadingIndicator');
-    const uploadButton = document.querySelector('.upload-button'); // Get the upload button
+    const uploadButton = document.querySelector('.upload-button');
 
-    // Hide previous results
     resultContainer.style.display = 'none';
-
-    // Show loading indicator and disable button
     loadingIndicator.style.display = 'block';
-    uploadButton.disabled = true; // Disable button to prevent multiple submissions
-    uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Identifying...'; // Change button text/icon
+    uploadButton.disabled = true;
+    uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Identifying...';
 
     try {
-        const response = await fetch('/upload', { // Ensure this matches your Flask route
-            method: 'POST',
-            body: formData
-        });
-        
+        const response = await fetch('/upload', { method: 'POST', body: formData });
         const data = await response.json();
-        
+
         if (response.ok) {
-            // Display the result
             resultContainer.style.display = 'block';
             document.getElementById('previewImage').src = data.url;
             document.getElementById('predictedDish').textContent = data.predicted_dish;
             document.getElementById('confidence').textContent = (data.confidence * 100).toFixed(2);
-            
-            // Store the predicted dish for the search button
-            document.getElementById('searchRecipe').onclick = function() {
-                window.location.href = `/search?q=${encodeURIComponent(data.predicted_dish)}`;
+
+            document.getElementById('searchRecipe').onclick = function () {
+                window.location.href = '/search?q=' + encodeURIComponent(data.predicted_dish);
             };
         } else {
             alert(data.error || 'An error occurred during prediction');
@@ -95,18 +100,17 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
         console.error('Error:', error);
         alert('An error occurred while processing your request. Please try again.');
     } finally {
-        // Hide loading indicator and re-enable button
         loadingIndicator.style.display = 'none';
         uploadButton.disabled = false;
-        uploadButton.innerHTML = '<i class="fas fa-search"></i> Identify Dish'; // Restore button text/icon
+        uploadButton.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Identify Dish';
     }
 });
 
-document.getElementById('tryAgain').addEventListener('click', function() {
+document.getElementById('tryAgain').addEventListener('click', function () {
     document.getElementById('uploadForm').reset();
     document.getElementById('result').style.display = 'none';
-    document.querySelector('.file-input-label span').textContent = 'Choose an image';
-    document.getElementById('previewImage').src = ''; // Clear image preview
+    document.querySelector('.file-input-label span').textContent = 'Drag & drop or click to choose an image';
+    document.getElementById('previewImage').src = '';
 });
 </script>
 {% endblock %}

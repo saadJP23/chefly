@@ -1,46 +1,53 @@
 {% extends "base.html" %}
+
+{% block title %}Famous Dishes — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/famous_dishes.css')}}">
-<div class="famous-dishes-container">
-    <div class="famous-header">
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-fire"></i> Popular</span>
         <h1>Famous Dishes</h1>
-        <p class="subtitle">Discover our most popular recipes</p>
+        <p>Discover our most popular recipes — loved by the Chefly community.</p>
     </div>
+</section>
 
-    <div class="dishes-grid">
-        {% if dishes %}
-            {% for dish in dishes %}
-            <a href="{{ dish.link }}" class="dish-card-link">
-                <div class="dish-card">
-                    <div class="dish-image">
-                        <img src="{{ dish.image_url }}" alt="{{ dish.name }}"/>
-                    </div>
-                    <div class="dish-info">
-                        <h3>{{ dish.name }}</h3>
-                        <div class="dish-meta">
-                            <span class="calories">
-                                <i class="fas fa-fire"></i>
-                                {% if dish.calories == '—' %}
-                                    —
-                                {% else %}
-                                    {{ dish.calories }} calories
-                                {% endif %}
-                            </span>
+<section class="page-body">
+    <div class="container">
+        <div class="dishes-grid">
+            {% if dishes %}
+                {% for dish in dishes %}
+                <a href="{{ dish.link }}" class="dish-card-link reveal" data-delay="{{ loop.index0 % 4 * 100 }}">
+                    <article class="dish-card">
+                        <div class="dish-image">
+                            <div class="img-skeleton" aria-hidden="true"></div>
+                            <img src="{{ dish.image_url }}" alt="{{ dish.name }}" loading="lazy">
                         </div>
-                        <p class="dish-description">{{ dish.instructions[:100] }}{% if dish.instructions|length > 100 %}...{% endif %}</p>
-                        <div class="view-recipe-text">Search recipes</div>
-                    </div>
+                        <div class="dish-info">
+                            <h3>{{ dish.name }}</h3>
+                            <div class="dish-meta">
+                                <span class="calories">
+                                    <i class="fas fa-fire-flame-curved"></i>
+                                    {% if dish.calories == '—' %}—{% else %}{{ dish.calories }} cal{% endif %}
+                                </span>
+                            </div>
+                            <p class="dish-description">{{ dish.instructions[:120] }}{% if dish.instructions|length > 120 %}...{% endif %}</p>
+                            <span class="view-recipe-text">Search recipes</span>
+                        </div>
+                    </article>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="no-dishes reveal">
+                    <i class="fas fa-utensils"></i>
+                    <h2>No dishes available</h2>
+                    <p>Check back later for our famous dishes!</p>
                 </div>
-            </a>
-            {% endfor %}
-        {% else %}
-            <div class="no-dishes">
-                <i class="fas fa-utensils"></i>
-                <h2>No dishes available</h2>
-                <p>Check back later for our famous dishes!</p>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-</div>
-
-{% endblock %} 
+</section>
+{% endblock %}

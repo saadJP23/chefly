@@ -1,15 +1,48 @@
-
-
 {% extends "base.html" %}
-{% block content %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/about.css')}}">
-<body>
-    <div class="about-container">
-        <h1>Discover the World's Flavors</h1>
-        <p>Our mission: make cooking accessible and enjoyable for everyone.</p>
-        <p>Explore carefully selected recipes from different cultures, with step-by-step instructions for perfect results.</p>
-        <p>Join our community to share and discover new dishes.</p>
+{% block title %}About — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-heart"></i> Our Story</span>
+        <h1>Discover the world's flavors</h1>
+        <p>We're on a mission to make cooking accessible, enjoyable, and intelligent for everyone.</p>
     </div>
-</body>
-{% endblock %} 
+</section>
+
+<section class="page-body">
+    <div class="container">
+        <div class="about-hero-card reveal">
+            <p>What began as a small weekend pop-up has blossomed into a movement for better home-cooking. Rooted in rich culinary traditions, we pair farm-fresh produce with inventive techniques to bring restaurant-quality dishes to your table.</p>
+            <p>Along the way, we've built a community of passionate home-chefs who share tips, swap recipes, and inspire each other to eat — and live — better.</p>
+            <p><strong>Our mission:</strong> To make healthy eating effortless and inspiring for families everywhere.</p>
+
+            <div class="about-stats">
+                <div class="about-stat reveal" data-delay="100">
+                    <strong>10K+</strong>
+                    <span>Recipes</span>
+                </div>
+                <div class="about-stat reveal" data-delay="200">
+                    <strong>500K+</strong>
+                    <span>Community</span>
+                </div>
+                <div class="about-stat reveal" data-delay="300">
+                    <strong>50+</strong>
+                    <span>Cuisines</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 48px;">
+                <a href="{{ url_for('famous_dishes') }}" class="btn btn--primary btn--lg">
+                    Explore Recipes <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

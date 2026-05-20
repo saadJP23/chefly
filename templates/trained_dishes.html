@@ -1,16 +1,38 @@
 {% extends "base.html" %}
+
+{% block title %}Trained Dishes — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
 {% block content %}
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-brain"></i> AI Model</span>
+        <h1>Trained Dishes</h1>
+        <p>Dishes our image recognition model has been trained to identify.</p>
+    </div>
+</section>
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/trained_dishes.css')}}">
-
-<div class="dishes-container">
-    <h1>My Trained Dishes</h1>
-    <ul>
-        {% for dish in dishes%}
-        <li><strong>{{ dish.dish}}</strong></li>
-        {% endfor %}
-    </ul>
-
-</div>
-
+<section class="page-body">
+    <div class="container">
+        {% if dishes %}
+        <ul class="trained-grid">
+            {% for dish in dishes %}
+            <li class="reveal" data-delay="{{ loop.index0 % 6 * 50 }}">
+                <i class="fa-solid fa-bowl-food" style="display:block;color:var(--c-primary);margin-bottom:8px;font-size:1.25rem;"></i>
+                {{ dish.dish }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state reveal">
+            <i class="fa-solid fa-brain"></i>
+            <h2>No trained dishes yet</h2>
+            <p>Check back soon as our model learns more cuisines.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

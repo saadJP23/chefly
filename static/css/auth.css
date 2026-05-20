@@ -1,0 +1,149 @@
+/* ============================================================
+   Chefly — Auth pages (Login / Signup)
+   ============================================================ */
+
+.auth-page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - var(--nav-h));
+    padding-top: var(--nav-h);
+}
+
+.auth-page--reverse .auth-page__form-wrap { order: 1; }
+.auth-page--reverse .auth-page__visual { order: 2; }
+
+.auth-page__visual {
+    background: linear-gradient(135deg, var(--fire) 0%, var(--ember) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12);
+    position: relative;
+    overflow: hidden;
+}
+.auth-page__visual::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(500px 300px at 80% 20%, rgba(255,255,255,0.15), transparent),
+        radial-gradient(400px 250px at 10% 90%, rgba(0,0,0,0.1), transparent);
+}
+.auth-page__visual-inner {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    max-width: 400px;
+}
+.auth-page__visual-inner h2 {
+    color: #fff;
+    font-size: var(--fs-3xl);
+    margin-bottom: var(--space-4);
+}
+.auth-page__visual-inner > p {
+    color: rgba(255,255,255,0.88);
+    font-size: var(--fs-md);
+    line-height: 1.7;
+}
+
+.auth-page__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.2);
+    border-radius: var(--r-full);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    margin-bottom: var(--space-6);
+}
+
+.auth-features {
+    list-style: none;
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.auth-features li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: rgba(255,255,255,0.9);
+    font-size: var(--fs-sm);
+}
+.auth-features i {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--r-full);
+    background: rgba(255,255,255,0.2);
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+}
+
+.auth-page__form-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-6);
+    background: var(--c-bg);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-2xl);
+    padding: var(--space-10);
+    box-shadow: var(--shadow-md);
+}
+
+.auth-card__header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+.auth-card__header h1 { font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    margin-bottom: var(--space-2);
+}
+.auth-card__header p {
+    margin: 0;
+    font-size: var(--fs-sm);
+}
+
+.auth-form .form-group { margin-bottom: var(--space-5); }
+
+.input-icon-wrap {
+    position: relative;
+}
+.input-icon-wrap > i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--c-text-muted);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+.input-icon-wrap .form-control {
+    padding-left: 44px;
+}
+
+.auth-card__footer {
+    text-align: center;
+    margin: var(--space-6) 0 0;
+    font-size: var(--fs-sm);
+    color: var(--c-text-soft);
+}
+.auth-card__footer a {
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .auth-page { grid-template-columns: 1fr; }
+    .auth-page__visual { display: none; }
+    .auth-page--reverse .auth-page__form-wrap { order: 0; }
+}

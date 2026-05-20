@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Recipe — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Generator</span>
+        <h1>Create a recipe from an idea</h1>
+        <p>Describe a craving, cuisine, ingredients, or diet goal and Chefly will save a structured recipe.</p>
+    </div>
+</section>
+
+<section class="page-body">
+    <div class="container narrow-page">
+        <form method="POST" class="feature-form reveal">
+            <label for="prompt" class="form-label">Recipe idea</label>
+            <textarea id="prompt" name="prompt" class="form-control" rows="5" placeholder="High protein Pakistani dinner with chicken and rice" required></textarea>
+            <button class="btn btn--primary btn--lg" type="submit"><i class="fa-solid fa-sparkles"></i> Generate</button>
+        </form>
+
+        {% if generated %}
+        <article class="recipe-section reveal">
+            <h2 class="section-title">{{ generated.name }}</h2>
+            <p>{{ generated.category }} · {{ generated.cuisine }} · {{ generated.diet_type }}</p>
+            <a class="btn btn--outline" href="{{ url_for('view_recipe', recipe_id=generated.id) }}">Open Recipe</a>
+        </article>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
