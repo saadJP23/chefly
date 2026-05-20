@@ -1,0 +1,92 @@
+/* ============================================================
+   Chefly — Footer v2
+   ============================================================ */
+.site-footer {
+  background: #1A0A04;
+  color: rgba(255,255,255,0.5);
+  padding: var(--space-20) 0 var(--space-8);
+  margin-top: auto;
+  position: relative;
+  overflow: hidden;
+}
+.site-footer::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 100% 0%, rgba(232,67,10,0.2), transparent 70%),
+              radial-gradient(ellipse 50% 50% at 0% 100%, rgba(245,200,66,0.1), transparent 70%);
+  pointer-events: none;
+}
+.site-footer .container { position: relative; z-index: 1; }
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+}
+
+.footer-logo {
+  display: inline-flex; align-items: center; gap: var(--space-3);
+  text-decoration: none; color: #fff; margin-bottom: var(--space-5);
+}
+.footer-logo:hover { color: #fff; }
+.footer-logo__icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--fire) 0%, var(--ember) 100%);
+  display: grid; place-items: center;
+  color: #fff; font-size: 1rem;
+  box-shadow: 0 4px 16px rgba(232,67,10,0.4);
+}
+.footer-logo__text {
+  font-family: var(--font-display);
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em;
+}
+
+.footer-tagline {
+  color: rgba(255,255,255,0.42);
+  font-size: var(--fs-sm); line-height: 1.7;
+  max-width: 280px; margin-bottom: var(--space-6);
+}
+
+.footer-social { display: flex; gap: var(--space-3); }
+.footer-social__link {
+  width: 40px; height: 40px; border-radius: var(--r-full);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: grid; place-items: center;
+  color: rgba(255,255,255,0.45); text-decoration: none;
+  transition: background var(--t-fast), color var(--t-fast), transform var(--t-fast);
+}
+.footer-social__link:hover { background: var(--fire); color: #fff; transform: translateY(-3px); }
+
+.footer-col__title { color: #fff; font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--space-5); }
+
+.footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.footer-links a { color: rgba(255,255,255,0.42); font-size: var(--fs-sm); transition: color var(--t-fast), padding-left var(--t-fast); }
+.footer-links a:hover { color: var(--ember); padding-left: 4px; }
+
+.footer-contact-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.footer-contact-list li { display: flex; align-items: center; gap: var(--space-3); font-size: var(--fs-sm); color: rgba(255,255,255,0.42); }
+.footer-contact-list i {
+  width: 34px; height: 34px; border-radius: var(--r-md);
+  background: rgba(232,67,10,0.15); color: var(--ember);
+  display: grid; place-items: center; flex-shrink: 0;
+}
+
+.footer-bottom {
+  padding-top: var(--space-8);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-4);
+  font-size: var(--fs-sm); color: rgba(255,255,255,0.28);
+}
+.footer-bottom__made i { color: var(--fire); }
+
+@media (max-width: 900px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; text-align: center; }
+}

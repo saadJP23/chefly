@@ -25,6 +25,7 @@ import numpy as np
 from PIL import Image as PILImage
 import io
 from flask_mail import Mail, Message
+from flask_cors import CORS
 from dotenv import load_dotenv
 from wtforms import StringField, SubmitField, TextAreaField
 import http.client as http_client
@@ -55,6 +56,14 @@ except ModuleNotFoundError:
 load_dotenv()
 
 app = Flask(__name__)
+application = app
+
+cors_origins = os.getenv('CORS_ORIGINS', '*')
+CORS(
+    app,
+    origins=[origin.strip() for origin in cors_origins.split(',')] if cors_origins != '*' else '*',
+    supports_credentials=True
+)
 
 app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
 app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT') or 587)
