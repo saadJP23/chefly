@@ -41,6 +41,7 @@ import glob
 import secrets
 from datetime import datetime, timedelta
 from sqlalchemy import func, or_
+from flask_cors import CORS
 
 try:
     import tensorflow as tf
@@ -57,6 +58,11 @@ load_dotenv()
 
 app = Flask(__name__)
 application = app
+CORS(app, origins=[
+    "https://cheflys.com",
+    "https://www.cheflys.com",
+    "https://web-production-9ad87.up.railway.app"
+])
 
 cors_origins = os.getenv('CORS_ORIGINS', '*')
 CORS(
