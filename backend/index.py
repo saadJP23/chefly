@@ -337,7 +337,7 @@ def load_chef_model_and_labels():
         return False, "TensorFlow is not installed in this environment."
     if chefly_model is None:
         try:
-            model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chefly_EfficientNetB0.h5')
+            model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chefly_mobilenetv2.h5')
             print(f"Loading model from: {model_path}")
 
             if not os.path.exists(model_path):
