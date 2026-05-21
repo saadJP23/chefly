@@ -480,7 +480,10 @@ def seed_recipe_metadata():
         if recipe.servings is None:
             recipe.servings = 4
             changed = True
-        calories = recipe.calories or 350
+        try:
+            calories = int(float(recipe.calories or 350))
+        except (TypeError, ValueError):
+            calories = 350
         if recipe.protein_g is None:
             recipe.protein_g = max(6, int(calories * 0.08))
             recipe.carbs_g = max(12, int(calories * 0.12))
