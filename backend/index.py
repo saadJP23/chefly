@@ -102,7 +102,7 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 SPOON_API_KEY=os.getenv('SPOON_API_KEY')
 OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
-client = OpenAI(api_key=OPENAI_API_KEY) if OpenAI else None
+client = OpenAI(api_key='OPENAI_API_KEY') if OpenAI else None
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

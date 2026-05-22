@@ -91,9 +91,12 @@
       '/famous-dishes': 'famous_dishes',
       '/trained_dishes': 'trained_dishes',
       '/upload': 'upload_form',
+      '/generate': 'generate_recipe',
+      '/submit-recipe': 'submit_recipe',
       '/login': 'login',
       '/signup': 'signup',
-      '/search': 'search'
+      '/search': 'search',
+      '/profile': 'profile'
     };
 
     let key = 'home';

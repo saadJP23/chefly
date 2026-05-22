@@ -34,11 +34,11 @@
       </form>
 
       <div class="hero-chips" aria-label="Quick searches">
-        <a href="{{ url_for('start_search') }}?q=sushi" class="chip">🍣 Sushi</a>
-        <a href="{{ url_for('start_search') }}?q=pasta" class="chip">🍝 Pasta</a>
-        <a href="{{ url_for('start_search') }}?q=curry" class="chip">🍛 Curry</a>
-        <a href="{{ url_for('start_search') }}?q=salad" class="chip">🥗 Salads</a>
-        <a href="{{ url_for('start_search') }}?q=dessert" class="chip">🍰 Desserts</a>
+        <a href="{{ url_for('search', q='sushi') }}" class="chip">🍣 Sushi</a>
+        <a href="{{ url_for('search', q='pasta') }}" class="chip">🍝 Pasta</a>
+        <a href="{{ url_for('search', q='curry') }}" class="chip">🍛 Curry</a>
+        <a href="{{ url_for('search', q='salad') }}" class="chip">🥗 Salads</a>
+        <a href="{{ url_for('search', q='dessert') }}" class="chip">🍰 Desserts</a>
       </div>
 
       <div class="hero__ctas">

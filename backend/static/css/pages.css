@@ -606,6 +606,16 @@
     color: var(--c-primary);
     white-space: nowrap;
 }
+.prediction-list__bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--grad-primary);
+    border-radius: 0 0 var(--r-lg) var(--r-lg);
+    opacity: 0.5;
+}
+.prediction-list__item { position: relative; overflow: hidden; }
 
 /* Trained dishes */
 .trained-grid {
