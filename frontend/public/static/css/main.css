@@ -299,8 +299,9 @@ label, .form-label {
 .flash-stack {
   position: fixed;
   top: calc(var(--nav-h) + 16px);
-  right: max(var(--space-6), calc((100vw - var(--container)) / 2 + var(--space-6)));
-  width: min(420px, calc(100vw - 32px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - 32px));
   display: grid;
   gap: var(--space-3);
   z-index: 1200;
@@ -311,6 +312,12 @@ label, .form-label {
   box-shadow: var(--shadow-md);
   backdrop-filter: blur(16px);
   pointer-events: auto;
+}
+.flash-message.alert-success {
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 18px 22px;
 }
 
 /* ── Scroll reveal ──────────────────────────────────────── */
