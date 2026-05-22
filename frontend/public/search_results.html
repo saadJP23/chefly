@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Search: {{ query }} — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-magnifying-glass"></i> Results</span>
+        <h1>Search results for "{{ query }}"</h1>
+        <p>{{ results|length }} dish{{ 'es' if results|length != 1 else '' }} found</p>
+    </div>
+</section>
+
+<section class="page-body">
+    <div class="container">
+        <form class="search-toolbar reveal" action="{{ url_for('search') }}" method="GET">
+            <input type="hidden" name="q" value="{{ query }}">
+            <div class="filter-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" aria-label="Filter by category">
+                    <option value="">All Categories</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Main">Main Dishes</option>
+                    <option value="Snack">Snacks</option>
+                    <option value="Dessert">Desserts</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="cuisine">Cuisine</label>
+                <select id="cuisine" name="cuisine" aria-label="Filter by cuisine">
+                    <option value="">Any Cuisine</option>
+                    <option value="Pakistani">Pakistani</option>
+                    <option value="Japanese">Japanese</option>
+                    <option value="Italian">Italian</option>
+                    <option value="Thai">Thai</option>
+                    <option value="Global">Global</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="diet_type">Diet</label>
+                <select id="diet_type" name="diet_type" aria-label="Filter by diet">
+                    <option value="">Any Diet</option>
+                    <option value="Vegetarian">Vegetarian</option>
+                    <option value="Regular">Regular</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="max_calories">Max Calories</label>
+                <input id="max_calories" name="max_calories" type="number" min="0" placeholder="500">
+            </div>
+            <div class="filter-group">
+                <label for="max_time">Max Time</label>
+                <input id="max_time" name="max_time" type="number" min="0" placeholder="45">
+            </div>
+            <div class="filter-group">
+                <label for="sort">Sort by</label>
+                <select id="sort" name="sort" aria-label="Sort results">
+                    <option value="relevance">Relevance</option>
+                    <option value="newest">Newest</option>
+                    <option value="calories">Lowest Calories</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn--primary btn--sm"><i class="fa-solid fa-filter"></i> Apply</button>
+        </form>
+
+        <div class="search-results-grid">
+            {% if results %}
+                {% for dish in results %}
+                <a href="{{ url_for('view_recipe', recipe_id=dish.id) }}" class="dish-card-link reveal" data-delay="{{ loop.index0 % 4 * 100 }}">
+                    <article class="dish-card">
+                        <div class="dish-image">
+                            <div class="img-skeleton" aria-hidden="true"></div>
+                            <img src="{{ dish.image_url }}" alt="{{ dish.name }}" loading="lazy">
+                            {% if dish.is_vegetarian %}
+                            <span class="veg-badge">Vegetarian</span>
+                            {% endif %}
+                        </div>
+                        <div class="dish-info">
+                            <h3>{{ dish.name }}</h3>
+                            <div class="dish-meta">
+                                <span class="rating"><i class="fas fa-star"></i> {{ dish.rating }}</span>
+                                <span class="time"><i class="far fa-clock"></i> {{ dish.cooking_time }}</span>
+                            </div>
+                            <p class="dish-description">{{ dish.description }}</p>
+                            {% if dish.tags %}
+                            <div class="dish-tags">
+                                {% for tag in dish.tags %}
+                                <span class="tag">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <span class="view-recipe-text">View Recipe</span>
+                        </div>
+                    </article>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="no-results reveal">
+                    <i class="fas fa-search"></i>
+                    <h2>No dishes found</h2>
+                    <p>Try adjusting your search or browse our <a href="{{ url_for('famous_dishes') }}">famous dishes</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

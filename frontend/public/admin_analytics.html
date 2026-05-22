@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Analytics — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container reveal">
+        <span class="section-eyebrow"><i class="fa-solid fa-chart-line"></i> Admin</span>
+        <h1>Chefly analytics</h1>
+        <p>Snapshot of users, recipes, favorites, reviews, and community submissions.</p>
+    </div>
+</section>
+
+<section class="page-body">
+    <div class="container">
+        <div class="analytics-grid reveal">
+            {% for label, value in stats.items() %}
+            <div class="analytics-card"><strong>{{ value }}</strong><span>{{ label.replace('_', ' ').title() }}</span></div>
+            {% endfor %}
+        </div>
+        <div class="profile-grid">
+            <section class="recipe-section reveal">
+                <h2 class="section-title">Most Saved</h2>
+                {% for recipe, count in top_recipes %}
+                <a class="mini-recipe-row" href="{{ url_for('view_recipe', recipe_id=recipe.id) }}">{{ recipe.name }} <span>{{ count }} saves</span></a>
+                {% endfor %}
+            </section>
+            <section class="recipe-section reveal">
+                <h2 class="section-title">Top Rated</h2>
+                {% for recipe, score in top_rated %}
+                <a class="mini-recipe-row" href="{{ url_for('view_recipe', recipe_id=recipe.id) }}">{{ recipe.name }} <span>{{ "%.1f"|format(score) }}</span></a>
+                {% else %}
+                <p>No ratings yet.</p>
+                {% endfor %}
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}
