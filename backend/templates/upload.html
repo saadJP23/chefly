@@ -11,7 +11,7 @@
     <div class="container reveal">
         <span class="section-eyebrow"><i class="fa-solid fa-camera"></i> AI Powered</span>
         <h1>Identify Your Dish</h1>
-        <p>Upload a photo and our AI model will recognize it with confidence scores in seconds.</p>
+        <p>Upload a photo and our AI model will return the top 3 predicted dishes with confidence scores.</p>
     </div>
 </section>
 
@@ -39,16 +39,13 @@
 
             <div id="result" class="result-container" style="display: none;" aria-live="polite">
                 <div class="prediction-result">
-                    <h2>Prediction Result</h2>
+                    <h2>Top 3 Predictions</h2>
                     <div class="image-preview">
                         <img id="previewImage" src="" alt="Uploaded dish">
                     </div>
-                    <div class="prediction-details">
-                        <p>Predicted Dish: <span id="predictedDish"></span></p>
-                        <p>Confidence: <span id="confidence"></span>%</p>
-                    </div>
+                    <ol id="predictionsList" class="prediction-list"></ol>
                     <div class="action-buttons">
-                        <button id="searchRecipe" type="button" class="btn btn--primary search-recipe-btn">Search Recipe</button>
+                        <button id="searchRecipe" type="button" class="btn btn--primary search-recipe-btn">Search Top Match</button>
                         <button id="tryAgain" type="button" class="btn btn--ghost try-again-btn">Try Another Image</button>
                     </div>
                 </div>
@@ -66,6 +63,18 @@ document.getElementById('image').addEventListener('change', function (e) {
         document.querySelector('.file-input-label span').textContent = fileName;
     }
 });
+
+function renderPredictions(predictions) {
+    const list = document.getElementById('predictionsList');
+    list.innerHTML = predictions.map(function (item, index) {
+        const pct = (item.confidence * 100).toFixed(1);
+        const topClass = index === 0 ? ' prediction-list__item--top' : '';
+        return '<li class="prediction-list__item' + topClass + '">' +
+            '<span class="prediction-list__rank">' + (index + 1) + '</span>' +
+            '<span class="prediction-list__name">' + item.dish + '</span>' +
+            '<span class="prediction-list__confidence">' + pct + '%</span></li>';
+    }).join('');
+}
 
 document.getElementById('uploadForm').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -85,13 +94,15 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
         const data = await response.json();
 
         if (response.ok) {
+            const predictions = data.predictions || [
+                { dish: data.predicted_dish, confidence: data.confidence }
+            ];
             resultContainer.style.display = 'block';
             document.getElementById('previewImage').src = data.url;
-            document.getElementById('predictedDish').textContent = data.predicted_dish;
-            document.getElementById('confidence').textContent = (data.confidence * 100).toFixed(2);
+            renderPredictions(predictions);
 
             document.getElementById('searchRecipe').onclick = function () {
-                window.location.href = '/search?q=' + encodeURIComponent(data.predicted_dish);
+                window.location.href = '/search?q=' + encodeURIComponent(predictions[0].dish);
             };
         } else {
             alert(data.error || 'An error occurred during prediction');
@@ -111,6 +122,7 @@ document.getElementById('tryAgain').addEventListener('click', function () {
     document.getElementById('result').style.display = 'none';
     document.querySelector('.file-input-label span').textContent = 'Drag & drop or click to choose an image';
     document.getElementById('previewImage').src = '';
+    document.getElementById('predictionsList').innerHTML = '';
 });
 </script>
 {% endblock %}

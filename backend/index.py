@@ -1259,13 +1259,15 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 # --- REVISED PREDICT_DISH FUNCTION ---
-def predict_dish(image_data):
+def predict_dish(image_data, top_k=3):
     """
     Predicts the dish from the given image data using the loaded model.
     Args:
         image_data: Bytes of the image file.
+        top_k: Number of top predictions to return (default 3).
     Returns:
-        tuple: (predicted_label, confidence, error_message)
+        tuple: (predictions_list, error_message)
+        predictions_list: [{dish, confidence}, ...] sorted by confidence desc
     """
     global chefly_model, class_labels_list
 
@@ -1273,7 +1275,7 @@ def predict_dish(image_data):
     if chefly_model is None or class_labels_list is None:
         success, error = load_chef_model_and_labels()
         if not success:
-            return None, None, error
+            return None, error
 
     print("Making prediction...")
     try:
@@ -1289,23 +1291,29 @@ def predict_dish(image_data):
 
         # Validate output shape matches label count
         if len(predictions) != len(class_labels_list):
-            return None, None, "Mismatch between model output and class_labels.json. Model output shape might be incorrect."
+            return None, "Mismatch between model output and class_labels.json. Model output shape might be incorrect."
 
-        # Get top prediction and top-5 for logging
-        top_5 = np.argsort(predictions)[::-1][:5]
-        top_label = class_labels_list[top_5[0]]
-        confidence = predictions[top_5[0]]
+        top_k = max(1, min(int(top_k), len(class_labels_list)))
+        top_indices = np.argsort(predictions)[::-1][:top_k]
+        top_predictions = [
+            {
+                'dish': class_labels_list[i],
+                'confidence': float(predictions[i]),
+            }
+            for i in top_indices
+        ]
 
-        print(f"\n✅ Predicted: {top_label} ({confidence*100:.2f}% confidence)\n")
-        print("🔝 Top 5 Predictions:")
-        for i in top_5:
-            print(f"{class_labels_list[i]}: {predictions[i] * 100:.2f}%")
+        best = top_predictions[0]
+        print(f"\n✅ Predicted: {best['dish']} ({best['confidence']*100:.2f}% confidence)\n")
+        print(f"🔝 Top {top_k} Predictions:")
+        for entry in top_predictions:
+            print(f"{entry['dish']}: {entry['confidence'] * 100:.2f}%")
 
-        return top_label, confidence, None # Return prediction, confidence, and no error
+        return top_predictions, None
 
     except Exception as e:
         print("Error making prediction:", e)
-        return None, None, str(e) # Return None for prediction and confidence, and error message
+        return None, str(e)
 # --- END REVISED PREDICT_DISH FUNCTION ---
 
 
@@ -1343,8 +1351,8 @@ def upload_file():
         # 3. Read image data
         image_data = file.read()
 
-        # 4. Perform prediction
-        predicted_dish, confidence, prediction_error = predict_dish(image_data)
+        # 4. Perform prediction (top 3)
+        top_predictions, prediction_error = predict_dish(image_data, top_k=3)
 
         if prediction_error:
             return jsonify({'error': f"Prediction failed: {prediction_error}"}), 500
@@ -1356,11 +1364,13 @@ def upload_file():
         except Exception as e:
             return jsonify({'error': f"Failed to upload image to Cloudinary: {str(e)}"}), 500
 
+        best = top_predictions[0]
         # 6. Return successful response
         return jsonify({
             'url': image_url,
-            'predicted_dish': predicted_dish,
-            'confidence': float(confidence)
+            'predicted_dish': best['dish'],
+            'confidence': best['confidence'],
+            'predictions': top_predictions,
         }), 200
 
     except Exception as e:
