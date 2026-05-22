@@ -1,27 +1,11 @@
 const http = require("http");
 const https = require("https");
-const fs = require("fs");
-const path = require("path");
 const { URL } = require("url");
 
-const publicDir = path.join(__dirname, "public");
 const port = process.env.PORT || 3000;
 const apiBaseUrl = (process.env.API_BASE_URL || "").replace(/\/$/, "");
 
-const contentTypes = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".svg": "image/svg+xml",
-  ".ico": "image/x-icon"
-};
-
-/** Map static .html URLs to Flask routes (Jinja-rendered pages). */
+/** Map legacy .html URLs to Flask routes. */
 const FLASK_PATH_MAP = {
   "/": "/",
   "/index.html": "/",
@@ -48,39 +32,14 @@ const FLASK_PATH_MAP = {
   "/recipe.html": "/search"
 };
 
-function send(res, status, body, type = "text/plain; charset=utf-8", extraHeaders = {}) {
-  res.writeHead(status, {
-    "Content-Type": type,
-    "Cache-Control": type.includes("text/html") ? "no-store" : "public, max-age=31536000, immutable",
-    ...extraHeaders
-  });
-  res.end(body);
-}
-
-function safePath(urlPath) {
-  const decoded = decodeURIComponent(urlPath.split("?")[0]);
-  const normalized = path.normalize(decoded).replace(/^(\.\.[/\\])+/, "");
-  return path.join(publicDir, normalized === "/" ? "index.html" : normalized);
-}
-
 function resolveFlaskPath(urlPath) {
   const [pathname, search] = urlPath.split("?");
+  if (pathname.startsWith("/static/") || pathname.startsWith("/uploads/")) {
+    return urlPath;
+  }
   const mapped = FLASK_PATH_MAP[pathname];
   const flaskPath = mapped || pathname.replace(/\.html$/, "") || "/";
   return search ? `${flaskPath}?${search}` : flaskPath;
-}
-
-function shouldProxyToFlask(urlPath) {
-  if (!apiBaseUrl) return false;
-  if (urlPath.startsWith("/static/")) return false;
-  if (urlPath === "/config.js") return false;
-  if (urlPath.startsWith("/api/")) return false;
-  const pathname = urlPath.split("?")[0];
-  if (pathname.includes(".")) {
-    const ext = path.extname(pathname).toLowerCase();
-    return ext === ".html" || ext === "";
-  }
-  return true;
 }
 
 function proxyToFlask(req, res) {
@@ -96,18 +55,28 @@ function proxyToFlask(req, res) {
     (proxyRes) => {
       const responseHeaders = { ...proxyRes.headers };
       delete responseHeaders.connection;
+
+      // Rewrite Location headers so redirects come back through the proxy
+      if (responseHeaders.location) {
+        try {
+          const loc = new URL(responseHeaders.location);
+          if (loc.host === target.host) {
+            const frontendHost = req.headers.host || `localhost:${port}`;
+            loc.host = frontendHost;
+            loc.protocol = "http:";
+            responseHeaders.location = loc.toString();
+          }
+        } catch (_) {}
+      }
+
       res.writeHead(proxyRes.statusCode || 502, responseHeaders);
       proxyRes.pipe(res);
     }
   );
 
   proxyReq.on("error", function () {
-    send(
-      res,
-      502,
-      "<!DOCTYPE html><html><body style='font-family:sans-serif;padding:2rem'><h1>Backend unavailable</h1><p>Set <code>API_BASE_URL</code> to your Flask server URL.</p></body></html>",
-      "text/html; charset=utf-8"
-    );
+    res.writeHead(502, { "Content-Type": "text/html; charset=utf-8" });
+    res.end("<!DOCTYPE html><html><body style='font-family:sans-serif;padding:2rem'><h1>Backend unavailable</h1><p>Flask backend at <code>" + apiBaseUrl + "</code> is not responding.</p></body></html>");
   });
 
   req.pipe(proxyReq);
@@ -116,33 +85,17 @@ function proxyToFlask(req, res) {
 http
   .createServer((req, res) => {
     if (req.url === "/config.js") {
-      const body = `window.CHEFLY_CONFIG = ${JSON.stringify({ apiBaseUrl })};`;
-      return send(res, 200, body, "application/javascript; charset=utf-8");
+      res.writeHead(200, { "Content-Type": "application/javascript; charset=utf-8" });
+      return res.end(`window.CHEFLY_CONFIG = ${JSON.stringify({ apiBaseUrl })};`);
     }
 
-    if (shouldProxyToFlask(req.url)) {
-      return proxyToFlask(req, res);
+    if (!apiBaseUrl) {
+      res.writeHead(503, { "Content-Type": "text/plain" });
+      return res.end("API_BASE_URL is not set.");
     }
 
-    let filePath = safePath(req.url);
-    if (!path.extname(filePath)) filePath += ".html";
-
-    fs.readFile(filePath, (err, data) => {
-      if (err) {
-        return fs.readFile(path.join(publicDir, "404.html"), (notFoundErr, notFound) => {
-          send(res, 404, notFoundErr ? "Not found" : notFound, "text/html; charset=utf-8");
-        });
-      }
-
-      const type = contentTypes[path.extname(filePath).toLowerCase()] || "application/octet-stream";
-      send(res, 200, data, type);
-    });
+    proxyToFlask(req, res);
   })
   .listen(port, () => {
-    console.log(`Chefly frontend listening on ${port}`);
-    if (apiBaseUrl) {
-      console.log(`HTML pages proxied to Flask (Jinja): ${apiBaseUrl}`);
-    } else {
-      console.warn("API_BASE_URL not set — only /static and index.html are served locally.");
-    }
+    console.log(`Chefly frontend listening on ${port}, proxying all requests to Flask: ${apiBaseUrl}`);
   });

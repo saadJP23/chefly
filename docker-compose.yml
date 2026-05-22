@@ -1,20 +1,34 @@
 version: '3.8'
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: chefly-db
+    environment:
+      MYSQL_ROOT_PASSWORD: SaadPakistan2013!
+      MYSQL_DATABASE: chefly
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pSaadPakistan2013!"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build: ./backend
-    container_name: chefly-local
+    container_name: chefly-backend
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     environment:
-      # OpenAI Configuration
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      
-      # API Keys
       - SPOON_API_KEY=${SPOON_API_KEY}
       - SERPER_API_KEY=${SERPER_API_KEY}
-      
-      # Email Configuration
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_PORT=${MAIL_PORT:-587}
       - MAIL_USERNAME=${MAIL_USERNAME}
@@ -22,20 +36,30 @@ services:
       - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
       - MAIL_USE_SSL=${MAIL_USE_SSL:-False}
       - RESET_SALT=${RESET_SALT}
-      
-      # Cloudinary Configuration
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
-      
-      # Database Configuration
       - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
-      
-      # Flask Configuration
       - SECRET_KEY=${SECRET_KEY}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
-    
     volumes:
       - ./backend/static/uploads:/app/static/uploads
-    
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: chefly-frontend
+    ports:
+      - "3001:3000"
+    environment:
+      - API_BASE_URL=http://backend:8080
+      - PORT=3000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
