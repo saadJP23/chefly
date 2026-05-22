@@ -348,7 +348,7 @@ html[data-theme="dark"] .hero__float-card {
 /* ── How it works ────────────────────────────────────────── */
 .how-steps {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem; margin-top: 3rem;
   position: relative;
 }
@@ -373,7 +373,7 @@ html[data-theme="dark"] .hero__float-card {
 .reviews-section { background: var(--c-surface-2); }
 .reviews-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem; margin-top: 2.5rem;
 }
 .review-card {
