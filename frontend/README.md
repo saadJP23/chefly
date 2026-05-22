@@ -1,6 +1,6 @@
-# Chefly Frontend
+# Chefly Frontend (Static assets + Flask proxy)
 
-Railway should deploy this directory only.
+This directory serves **static assets** (`/static/css`, `/static/js`, images) and **proxies all HTML pages to the Flask backend**, which renders Jinja templates.
 
 ## Railway Settings
 
@@ -9,22 +9,39 @@ Root Directory: frontend
 Start Command: npm start
 ```
 
-Add:
+Required:
 
 ```text
 API_BASE_URL=https://your-lightsail-backend-domain.com
 ```
 
-The server injects that value at `/config.js`, so you can change the backend URL without rebuilding static HTML by hand.
+With `API_BASE_URL` set, requests like `/generate.html` or `/upload.html` are proxied to Flask routes (`/generate`, `/upload`) and return fully rendered Jinja HTML — not raw template source.
 
-## Local Run
+## Local development
+
+**Option A — Flask only (recommended):**
 
 ```bash
-npm start
+cd backend
+source .venv/bin/activate
+python index.py
 ```
 
-Then open:
+Open `http://127.0.0.1:8080`
 
-```text
-http://localhost:3000
+**Option B — Frontend proxy + Flask backend:**
+
+```bash
+# Terminal 1
+cd backend && python index.py
+
+# Terminal 2
+cd frontend
+API_BASE_URL=http://127.0.0.1:8080 npm start
 ```
+
+Open `http://localhost:3000`
+
+## Templates
+
+All page markup lives in `backend/templates/` (Jinja). Do not add full HTML pages to `frontend/public/` — only `404.html` and static assets belong here.

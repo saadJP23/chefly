@@ -21,6 +21,8 @@ frontend/
 
 ## Deploy Frontend To Railway
 
+The Railway service serves static CSS/JS/images and **proxies HTML to Flask** (Jinja templates in `backend/templates/`).
+
 1. Push this folder to GitHub.
 2. In Railway, create or update the service from the GitHub repo.
 3. Set the service root directory to:
@@ -37,6 +39,8 @@ API_BASE_URL=https://your-lightsail-backend-domain.com
 
 5. Redeploy and open the generated Railway domain.
 6. In Cloudflare, point `cheflys.com` or `www.cheflys.com` to the Railway custom domain target.
+
+**Important:** Page HTML is rendered by Flask/Jinja on the backend. Do not place Jinja template files in `frontend/public/` — they will show as raw `{% ... %}` text on a static host.
 
 ## Backend Notes
 
