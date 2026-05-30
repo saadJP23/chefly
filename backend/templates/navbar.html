@@ -1,8 +1,7 @@
 <header class="site-header" id="siteHeader">
     <nav class="navbar container" aria-label="Main navigation">
         <a href="{{ url_for('home') }}" class="navbar__brand" aria-label="Chefly home">
-            <span class="navbar__logo-icon" aria-hidden="true"><i class="fa-solid fa-utensils"></i></span>
-            <span class="navbar__logo-text">Chefly</span>
+            <img src="{{ url_for('static', filename='images/logo2.png') }}" alt="Chefly" class="navbar__logo-img">
         </a>
 
         <ul class="navbar__links" role="list">

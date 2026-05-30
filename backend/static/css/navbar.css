@@ -56,6 +56,11 @@ html[data-theme="dark"] .site-header.is-scrolled {
   font-weight: 700;
   letter-spacing: -0.03em;
 }
+.navbar__logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
 
 /* Desktop links */
 .navbar__links {

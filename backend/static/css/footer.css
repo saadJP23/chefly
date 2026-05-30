@@ -41,6 +41,11 @@
   font-family: var(--font-display);
   font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em;
 }
+.footer-logo__img {
+  height: 56px;
+  width: auto;
+  object-fit: contain;
+}
 
 .footer-tagline {
   color: rgba(255,255,255,0.42);
