@@ -57,9 +57,11 @@ html[data-theme="dark"] .site-header.is-scrolled {
   letter-spacing: -0.03em;
 }
 .navbar__logo-img {
-  height: 48px;
+  height: 40px;
   width: auto;
+  max-width: 140px;
   object-fit: contain;
+  display: block;
 }
 
 /* Desktop links */
