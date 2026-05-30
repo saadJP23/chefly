@@ -1505,6 +1505,33 @@ def start_search():
     query = request.form.get('q', '')
     return render_template('loading_page.html', query=query)
 
+# ── LEGAL PAGES ──────────────────────────────────────────────────────────────
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+# JSON versions for the mobile app
+@app.route('/api/privacy')
+def api_privacy():
+    return jsonify({
+        'title': 'Privacy Policy',
+        'url': 'https://cheflys.com/privacy',
+        'last_updated': '2026-06-01'
+    })
+
+@app.route('/api/terms')
+def api_terms():
+    return jsonify({
+        'title': 'Terms of Service',
+        'url': 'https://cheflys.com/terms',
+        'last_updated': '2026-06-01'
+    })
+
 # ── PRICING & STRIPE ─────────────────────────────────────────────────────────
 
 @app.route('/pricing')
