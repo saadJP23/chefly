@@ -224,28 +224,6 @@ class TrainedDish(db.Model):
     dish = db.Column(db.String(100), nullable=False)
 
 
-def _class_labels_json_path():
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), 'class_labels.json')
-
-
-@functools.lru_cache(maxsize=1)
-def _cached_class_labels_tuple():
-    path = _class_labels_json_path()
-    with open(path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    if not isinstance(data, list):
-        raise ValueError('class_labels.json must contain a JSON array of strings')
-    return tuple(data)
-
-
-def load_class_labels():
-    """Trained class names from class_labels.json (same source as the CNN labels)."""
-    return list(_cached_class_labels_tuple())
-
-
-def trained_dish_rows_from_labels():
-    """dict rows with keys id, dish — matches trained_dishes.html and /api/trained."""
-    return [{'id': idx, 'dish': label} for idx, label in enumerate(load_class_labels(), start=1)]
 
 
 def placeholder_dish_image(label_display: str) -> str:
@@ -260,23 +238,25 @@ def placeholder_dish_image(label_display: str) -> str:
     return 'data:image/svg+xml,' + quote(svg)
 
 
+FAMOUS_DISHES = [
+    "Spaghetti Carbonara", "Butter Chicken", "Sushi", "Tacos", "Pad Thai",
+    "Biryani", "Pizza Margherita", "Ramen", "Paella", "Beef Bourguignon",
+    "Tom Yum Soup", "Shawarma", "Pho", "Jerk Chicken", "Moussaka",
+    "Peking Duck", "Tiramisu", "Croissant", "Baklava", "Dim Sum",
+]
+
 def famous_dish_cards_from_labels(count=5):
-    """Card dicts for famous_dishes.html: name, link, image_url, calories, instructions."""
-    labels = load_class_labels()
-    if not labels:
-        return []
-    picks = random.sample(labels, k=min(count, len(labels)))
-    cards = []
-    for label in picks:
-        display = label.replace('_', ' ')
-        cards.append({
-            'name': display,
-            'link': url_for('search', q=display),
-            'image_url': placeholder_dish_image(display),
+    picks = random.sample(FAMOUS_DISHES, k=min(count, len(FAMOUS_DISHES)))
+    return [
+        {
+            'name': name,
+            'link': url_for('search', q=name),
+            'image_url': placeholder_dish_image(name),
             'calories': '—',
-            'instructions': f'Explore recipes and ideas for {display}.',
-        })
-    return cards
+            'instructions': f'Explore recipes and ideas for {name}.',
+        }
+        for name in picks
+    ]
 
 
 def _openai_message_text(resp):
@@ -326,50 +306,7 @@ def _cleanup_bing_download_dir(query, image_path=None):
 
 
 # --- GLOBAL MODEL AND LABEL LOADING ---
-# Global variables for the model and class labels to avoid reloading on every request
-chefly_model = None
-class_labels_list = None
-
-def load_chef_model_and_labels():
-    """Load the EfficientNetB0 model and class labels once."""
-    global chefly_model, class_labels_list
-    if tf is None:
-        return False, "TensorFlow is not installed in this environment."
-    if chefly_model is None:
-        try:
-            model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'chefly_mobilenetv2.h5')
-            print(f"Loading model from: {model_path}")
-
-            if not os.path.exists(model_path):
-                print(f"Error: Model file not found at {model_path}")
-                return False, "Model file not found."
-
-            chefly_model = tf.keras.models.load_model(model_path, compile=False)
-            print("Model loaded successfully")
-
-            # Load class labels
-            labels_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'class_labels.json')
-            if not os.path.exists(labels_path):
-                print(f"Error: class_labels.json not found at {labels_path}")
-                return False, "Class labels file not found."
-            with open(labels_path, "r") as f:
-                class_labels_list = json.load(f)
-            print("Class labels loaded successfully")
-
-            return True, None
-        except Exception as e:
-            print(f"Error loading model or labels: {str(e)}")
-            chefly_model = None
-            class_labels_list = None
-            return False, f"Failed to load model or labels: {str(e)}"
-    return True, None
-
-# Call this once when the app starts
-with app.app_context():
-    success, error_msg = load_chef_model_and_labels()
-    if not success:
-        print(f"FATAL ERROR: Could not load machine learning model: {error_msg}")
-        # Depending on your deployment, you might want to exit or log this more seriously
+# GPT-4o Vision replaces the local ML model for dish recognition
 
 # --- END GLOBAL MODEL AND LABEL LOADING ---
 
@@ -1261,71 +1198,64 @@ def load_user(user_id):
 # --- REVISED PREDICT_DISH FUNCTION ---
 def predict_dish(image_data, top_k=3):
     """
-    Predicts the dish from the given image data using the loaded model.
-    Args:
-        image_data: Bytes of the image file.
-        top_k: Number of top predictions to return (default 3).
-    Returns:
-        tuple: (predictions_list, error_message)
-        predictions_list: [{dish, confidence}, ...] sorted by confidence desc
+    Identifies a dish from image bytes using GPT-4o Vision.
+    Returns top_k predictions with confidence estimates.
     """
-    global chefly_model, class_labels_list
+    if OpenAI is None:
+        return None, "OpenAI package is not installed."
 
-    # Ensure model and labels are loaded
-    if chefly_model is None or class_labels_list is None:
-        success, error = load_chef_model_and_labels()
-        if not success:
-            return None, error
+    openai_key = os.getenv('OPENAI_API_KEY')
+    if not openai_key:
+        return None, "OPENAI_API_KEY is not set."
 
-    print("Making prediction...")
+    import base64
+    client = OpenAI(api_key=openai_key)
+
+    image_b64 = base64.b64encode(image_data).decode('utf-8')
+
+    prompt = (
+        f"You are a food recognition expert. Look at this food image and identify the dish. "
+        f"Return ONLY a JSON array of exactly {top_k} objects, ordered by confidence (highest first), "
+        f"each with keys 'dish' (string, the dish name) and 'confidence' (float between 0 and 1). "
+        f"If you are not sure, still return your best {top_k} guesses. "
+        f"Return ONLY the JSON array, no other text."
+    )
+
     try:
-        # Load and preprocess image
-        image = PILImage.open(io.BytesIO(image_data)).convert('RGB')
-        image = image.resize((224, 224))
-        img_array = img_to_array(image)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = preprocess_input(img_array)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}", "detail": "low"}},
+                    ],
+                }
+            ],
+            max_tokens=200,
+        )
 
-        # Predict using the loaded model
-        predictions = chefly_model.predict(img_array)[0]
+        raw = response.choices[0].message.content.strip()
+        # Strip markdown code fences if present
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"):
+                raw = raw[4:]
+        predictions = json.loads(raw.strip())
 
-        # Validate output shape matches label count
-        if len(predictions) != len(class_labels_list):
-            return None, "Mismatch between model output and class_labels.json. Model output shape might be incorrect."
+        if not isinstance(predictions, list) or len(predictions) == 0:
+            return None, "Unexpected response format from GPT-4o."
 
-        top_k = max(1, min(int(top_k), len(class_labels_list)))
-        top_indices = np.argsort(predictions)[::-1][:top_k]
-        top_predictions = [
-            {
-                'dish': class_labels_list[i],
-                'confidence': float(predictions[i]),
-            }
-            for i in top_indices
-        ]
-
-        best = top_predictions[0]
-        print(f"\n✅ Predicted: {best['dish']} ({best['confidence']*100:.2f}% confidence)\n")
-        print(f"🔝 Top {top_k} Predictions:")
-        for entry in top_predictions:
-            print(f"{entry['dish']}: {entry['confidence'] * 100:.2f}%")
-
-        return top_predictions, None
+        best = predictions[0]
+        print(f"✅ Predicted: {best['dish']} ({best['confidence']*100:.1f}% confidence)")
+        return predictions, None
 
     except Exception as e:
-        print("Error making prediction:", e)
+        print("Error in predict_dish:", e)
         return None, str(e)
-# --- END REVISED PREDICT_DISH FUNCTION ---
 
 
-@app.route('/api/trained', methods=["GET"])
-def api_trained_dishes():
-    return jsonify(trained_dish_rows_from_labels()), 200
-
-
-@app.route('/trained_dishes', methods=["GET"])
-def trained_dishes():
-    dishes = trained_dish_rows_from_labels()
-    return render_template('trained_dishes.html', dishes=dishes)
 
 @app.route('/upload', methods=['GET'])
 def upload_form():
@@ -1357,12 +1287,14 @@ def upload_file():
         if prediction_error:
             return jsonify({'error': f"Prediction failed: {prediction_error}"}), 500
 
-        # 5. Upload image to Cloudinary (only if prediction was successful)
-        try:
-            upload_result = cloudinary.uploader.upload(io.BytesIO(image_data), resource_type="image")
-            image_url = upload_result['secure_url']
-        except Exception as e:
-            return jsonify({'error': f"Failed to upload image to Cloudinary: {str(e)}"}), 500
+        # 5. Upload image to Cloudinary (optional — gracefully skipped if not configured)
+        image_url = None
+        if cloudinary:
+            try:
+                upload_result = cloudinary.uploader.upload(io.BytesIO(image_data), resource_type="image")
+                image_url = upload_result['secure_url']
+            except Exception as e:
+                print(f"Cloudinary upload skipped: {e}")
 
         best = top_predictions[0]
         # 6. Return successful response
