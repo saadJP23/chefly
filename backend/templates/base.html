@@ -9,6 +9,21 @@
     <link rel="icon" type="image/png" href="/static/images/logo.png">
     <link rel="apple-touch-icon" href="/static/images/logo.png">
 
+    <!-- Open Graph (Facebook, WhatsApp, Reddit, Discord) -->
+    <meta property="og:type"        content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name"   content="Chefly">
+    <meta property="og:title"       content="{% block og_title %}Chefly — AI-Powered Cooking Community{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Point your camera at any dish and Chefly identifies it instantly — then gives you the full recipe. Free to try.{% endblock %}">
+    <meta property="og:image"       content="{% block og_image %}https://cheflys.com/static/images/logo.png{% endblock %}">
+    <meta property="og:url"         content="{% block og_url %}https://cheflys.com{% endblock %}">
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:site"        content="@cheflys">
+    <meta name="twitter:title"       content="{% block tw_title %}Chefly — AI-Powered Cooking Community{% endblock %}">
+    <meta name="twitter:description" content="{% block tw_description %}Point your camera at any dish and Chefly identifies it instantly — then gives you the full recipe. Free to try.{% endblock %}">
+    <meta name="twitter:image"       content="{% block tw_image %}https://cheflys.com/static/images/logo.png{% endblock %}">
+
     <!-- Theme bootstrap (no FOUC) -->
     <script>
       (function () {

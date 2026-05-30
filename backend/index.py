@@ -1505,6 +1505,39 @@ def start_search():
     query = request.form.get('q', '')
     return render_template('loading_page.html', query=query)
 
+# ── SEO ──────────────────────────────────────────────────────────────────────
+
+@app.route('/sitemap.xml')
+def sitemap():
+    from flask import Response
+    static_urls = [
+        ('https://cheflys.com/', '1.0', 'daily'),
+        ('https://cheflys.com/famous-dishes', '0.8', 'weekly'),
+        ('https://cheflys.com/upload', '0.9', 'weekly'),
+        ('https://cheflys.com/pricing', '0.7', 'monthly'),
+        ('https://cheflys.com/about', '0.5', 'monthly'),
+        ('https://cheflys.com/privacy', '0.3', 'monthly'),
+        ('https://cheflys.com/terms', '0.3', 'monthly'),
+    ]
+    recipes = Recipe.query.with_entities(Recipe.id, Recipe.updated_at).all()
+    recipe_urls = [
+        (f'https://cheflys.com/recipe/{r.id}', '0.6', 'weekly')
+        for r in recipes
+    ]
+    all_urls = static_urls + recipe_urls
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    for loc, priority, freq in all_urls:
+        xml.append(f'  <url><loc>{loc}</loc><priority>{priority}</priority><changefreq>{freq}</changefreq></url>')
+    xml.append('</urlset>')
+    return Response('\n'.join(xml), mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    from flask import Response
+    content = "User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: https://cheflys.com/sitemap.xml\n"
+    return Response(content, mimetype='text/plain')
+
 # ── LEGAL PAGES ──────────────────────────────────────────────────────────────
 
 @app.route('/privacy')

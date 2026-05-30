@@ -2,6 +2,14 @@
 
 {% block title %}{{ recipe.name }} — Chefly{% endblock %}
 {% block meta_description %}Cook {{ recipe.name }} with ingredients, instructions, timing, nutrition, ratings, and reviews on Chefly.{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ recipe.name }} — Recipe on Chefly{% endblock %}
+{% block og_description %}Cook {{ recipe.name }} — full ingredients, step-by-step instructions{% if recipe.calories %}, {{ recipe.calories }} cal{% endif %}. Free on Chefly.{% endblock %}
+{% block og_image %}{{ recipe.image_url or 'https://cheflys.com/static/images/logo.png' }}{% endblock %}
+{% block og_url %}https://cheflys.com/recipe/{{ recipe.id }}{% endblock %}
+{% block tw_title %}{{ recipe.name }} — Recipe on Chefly{% endblock %}
+{% block tw_description %}Cook {{ recipe.name }} — full ingredients, step-by-step instructions. Free on Chefly.{% endblock %}
+{% block tw_image %}{{ recipe.image_url or 'https://cheflys.com/static/images/logo.png' }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
