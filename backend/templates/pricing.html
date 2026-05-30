@@ -121,7 +121,6 @@
                 <span class="active-badge">✓ Active — You're Pro</span>
             {% elif current_user.is_authenticated %}
                 <form action="{{ url_for('create_checkout_session') }}" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="btn btn--primary btn--block btn--lg" type="submit">
                         Upgrade to Pro
                     </button>
