@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing — Chefly{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages.css') }}">
+<style>
+.pricing-hero { text-align: center; padding: 4rem 1rem 2rem; }
+.pricing-hero h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: .75rem; }
+.pricing-hero p  { opacity: .7; max-width: 520px; margin: 0 auto 2.5rem; }
+
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 780px;
+    margin: 0 auto 4rem;
+    padding: 0 1rem;
+}
+
+.pricing-card {
+    background: var(--card-bg, rgba(255,255,255,.04));
+    border: 1px solid var(--border-color, rgba(255,255,255,.08));
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.pricing-card--pro {
+    border-color: var(--accent, #e07b39);
+    box-shadow: 0 0 0 1px var(--accent, #e07b39);
+    position: relative;
+}
+.pricing-card__badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent, #e07b39);
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: .25rem .9rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.pricing-card__tier   { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; opacity: .6; }
+.pricing-card__price  { font-size: 2.6rem; font-weight: 800; line-height: 1; }
+.pricing-card__price span { font-size: 1rem; font-weight: 400; opacity: .6; }
+.pricing-card__desc   { font-size: .9rem; opacity: .65; }
+.pricing-card__features { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .6rem; font-size: .92rem; }
+.pricing-card__features li::before { content: "✓ "; color: var(--accent, #e07b39); font-weight: 700; }
+.pricing-card__features li.no::before { content: "✗ "; color: rgba(255,255,255,.3); }
+.pricing-card__features li.no { opacity: .45; }
+.pricing-card__cta { margin-top: auto; }
+
+.active-badge {
+    display: inline-block;
+    background: #2e7d32;
+    color: #fff;
+    border-radius: 999px;
+    padding: .35rem 1rem;
+    font-size: .85rem;
+    font-weight: 600;
+    text-align: center;
+}
+.scan-note { text-align: center; opacity: .55; font-size: .85rem; margin-bottom: 3rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="pricing-hero container">
+    <span class="section-eyebrow"><i class="fa-solid fa-star"></i> Pricing</span>
+    <h1>Simple, honest pricing</h1>
+    <p>Identify any dish from a photo with AI. Free to try, upgrade when you need more.</p>
+</section>
+
+<div class="pricing-grid">
+
+    <!-- FREE -->
+    <div class="pricing-card">
+        <p class="pricing-card__tier">Free</p>
+        <div class="pricing-card__price">$0 <span>/ forever</span></div>
+        <p class="pricing-card__desc">Perfect for casual cooks who want to try the AI occasionally.</p>
+        <ul class="pricing-card__features">
+            <li>5 AI dish scans per day</li>
+            <li>Recipe generation</li>
+            <li>Submit & browse recipes</li>
+            <li class="no">Unlimited scans</li>
+            <li class="no">Priority support</li>
+        </ul>
+        <div class="pricing-card__cta">
+            {% if is_pro %}
+                <p style="opacity:.5;font-size:.85rem;text-align:center">Your current plan</p>
+            {% elif current_user.is_authenticated %}
+                <p style="opacity:.5;font-size:.85rem;text-align:center">{{ scans_left }} scan{{ 's' if scans_left != 1 else '' }} left today</p>
+            {% else %}
+                <a href="{{ url_for('signup') }}" class="btn btn--outline btn--block">Get started free</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- PRO -->
+    <div class="pricing-card pricing-card--pro">
+        <span class="pricing-card__badge">Most Popular</span>
+        <p class="pricing-card__tier">Pro</p>
+        <div class="pricing-card__price">$4.99 <span>/ month</span></div>
+        <p class="pricing-card__desc">For food enthusiasts who scan dishes daily and want zero limits.</p>
+        <ul class="pricing-card__features">
+            <li>Unlimited AI dish scans</li>
+            <li>Recipe generation</li>
+            <li>Submit & browse recipes</li>
+            <li>Cancel anytime</li>
+            <li>Priority support</li>
+        </ul>
+        <div class="pricing-card__cta">
+            {% if is_pro %}
+                <span class="active-badge">✓ Active — You're Pro</span>
+            {% elif current_user.is_authenticated %}
+                <form action="{{ url_for('create_checkout_session') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn--primary btn--block btn--lg" type="submit">
+                        Upgrade to Pro
+                    </button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('signup') }}" class="btn btn--primary btn--block btn--lg">Sign up & upgrade</a>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% if not is_pro and current_user.is_authenticated %}
+<p class="scan-note">You have <strong>{{ scans_left }}</strong> free scan{{ 's' if scans_left != 1 else '' }} remaining today. Resets at midnight UTC.</p>
+{% endif %}
+{% endblock %}

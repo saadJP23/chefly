@@ -27,6 +27,10 @@ import io
 from flask_mail import Mail, Message
 from flask_cors import CORS
 from dotenv import load_dotenv
+try:
+    import stripe
+except ModuleNotFoundError:
+    stripe = None
 from wtforms import StringField, SubmitField, TextAreaField
 import http.client as http_client
 try:
@@ -80,6 +84,13 @@ app.config['MAIL_USE_SSL'] = os.getenv('MAIL_USE_SSL') == 'True'
 app.config['RESET_SALT'] = os.getenv('RESET_SALT')
 mail = Mail(app)
 
+# Stripe Configuration
+if stripe:
+    stripe.api_key = os.getenv('STRIPE_SECRET_KEY', '')
+
+STRIPE_PRICE_ID = os.getenv('STRIPE_PRICE_ID', '')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
+
 # Cloudinary Configuration
 if cloudinary:
     cloudinary.config(
@@ -122,6 +133,33 @@ class User(UserMixin, db.Model):
     dietary_pref = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+    # Stripe / Pro plan
+    is_pro = db.Column(db.Boolean, default=False, nullable=False)
+    stripe_customer_id = db.Column(db.String(120), nullable=True)
+    stripe_subscription_id = db.Column(db.String(120), nullable=True)
+    # Daily scan quota (free tier = 5/day)
+    scan_count = db.Column(db.Integer, default=0, nullable=False)
+    scan_reset_date = db.Column(db.Date, nullable=True)
+
+    FREE_DAILY_SCANS = 5
+
+    def scans_remaining(self):
+        today = datetime.utcnow().date()
+        if self.scan_reset_date != today:
+            self.scan_count = 0
+            self.scan_reset_date = today
+            db.session.commit()
+        if self.is_pro:
+            return 999
+        return max(0, self.FREE_DAILY_SCANS - self.scan_count)
+
+    def use_scan(self):
+        today = datetime.utcnow().date()
+        if self.scan_reset_date != today:
+            self.scan_count = 0
+            self.scan_reset_date = today
+        self.scan_count += 1
+        db.session.commit()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -874,11 +912,28 @@ def profile():
 @login_required
 def submit_recipe():
     if request.method == 'POST':
+        # Handle image file upload → Cloudinary
+        image_url = None
+        image_file = request.files.get('image_file')
+        if image_file and image_file.filename and allowed_file(image_file.filename):
+            if cloudinary:
+                try:
+                    upload_result = cloudinary.uploader.upload(image_file, resource_type='image')
+                    image_url = upload_result['secure_url']
+                except Exception as e:
+                    print(f"Cloudinary upload failed: {e}")
+            else:
+                # Fallback: save locally
+                filename = secure_filename(image_file.filename)
+                save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                image_file.save(save_path)
+                image_url = url_for('static', filename=f'uploads/{filename}')
+
         recipe = Recipe(
             name=request.form.get('name', '').strip(),
             ingredients=json.dumps([line.strip() for line in request.form.get('ingredients', '').splitlines() if line.strip()]),
             instructions=request.form.get('instructions', '').strip(),
-            image_url=request.form.get('image_url', '').strip() or None,
+            image_url=image_url,
             calories=_int_or_none(request.form.get('calories')),
             category=request.form.get('category', '').strip() or 'Main',
             cuisine=request.form.get('cuisine', '').strip() or 'Global',
@@ -1259,12 +1314,20 @@ def predict_dish(image_data, top_k=3):
 
 @app.route('/upload', methods=['GET'])
 def upload_form():
-    """Render the upload form"""
-    return render_template('upload.html')
+    scans_left = current_user.scans_remaining() if current_user.is_authenticated else User.FREE_DAILY_SCANS
+    return render_template('upload.html', scans_left=scans_left)
 
 # --- REVISED UPLOAD_FILE FUNCTION ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    # Enforce daily scan limit for authenticated free users
+    if current_user.is_authenticated and not current_user.is_pro:
+        if current_user.scans_remaining() <= 0:
+            return jsonify({
+                'error': 'daily_limit_reached',
+                'message': 'You have used all 5 free scans for today. Upgrade to Pro for unlimited scans.',
+                'upgrade_url': url_for('pricing')
+            }), 429
     try:
         # 1. Check for file in request
         if 'file' not in request.files:
@@ -1297,12 +1360,17 @@ def upload_file():
                 print(f"Cloudinary upload skipped: {e}")
 
         best = top_predictions[0]
-        # 6. Return successful response
+        # 6. Record scan usage for authenticated free users
+        if current_user.is_authenticated and not current_user.is_pro:
+            current_user.use_scan()
+        # 7. Return successful response
+        scans_left = current_user.scans_remaining() if current_user.is_authenticated else None
         return jsonify({
             'url': image_url,
             'predicted_dish': best['dish'],
             'confidence': best['confidence'],
             'predictions': top_predictions,
+            'scans_left': scans_left,
         }), 200
 
     except Exception as e:
@@ -1437,10 +1505,106 @@ def start_search():
     query = request.form.get('q', '')
     return render_template('loading_page.html', query=query)
 
+# ── PRICING & STRIPE ─────────────────────────────────────────────────────────
+
+@app.route('/pricing')
+def pricing():
+    is_pro = current_user.is_authenticated and current_user.is_pro
+    scans_left = current_user.scans_remaining() if current_user.is_authenticated else User.FREE_DAILY_SCANS
+    return render_template('pricing.html',
+                           is_pro=is_pro,
+                           scans_left=scans_left,
+                           stripe_pub_key=os.getenv('STRIPE_PUBLISHABLE_KEY', ''))
+
+
+@app.route('/create-checkout-session', methods=['POST'])
+@login_required
+def create_checkout_session():
+    if not stripe or not STRIPE_PRICE_ID:
+        flash('Payments are not configured yet. Please contact support.', 'warning')
+        return redirect(url_for('pricing'))
+    try:
+        # Reuse or create a Stripe customer
+        customer_id = current_user.stripe_customer_id
+        if not customer_id:
+            customer = stripe.Customer.create(
+                email=current_user.email,
+                metadata={'user_id': current_user.id}
+            )
+            customer_id = customer.id
+            current_user.stripe_customer_id = customer_id
+            db.session.commit()
+
+        session = stripe.checkout.Session.create(
+            customer=customer_id,
+            payment_method_types=['card'],
+            line_items=[{'price': STRIPE_PRICE_ID, 'quantity': 1}],
+            mode='subscription',
+            success_url=url_for('billing_success', _external=True) + '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=url_for('pricing', _external=True),
+        )
+        return redirect(session.url, code=303)
+    except Exception as e:
+        print(f"Stripe checkout error: {e}")
+        flash('Could not start checkout. Please try again.', 'danger')
+        return redirect(url_for('pricing'))
+
+
+@app.route('/billing-success')
+@login_required
+def billing_success():
+    session_id = request.args.get('session_id')
+    if session_id and stripe:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            if session.subscription:
+                current_user.is_pro = True
+                current_user.stripe_subscription_id = session.subscription
+                db.session.commit()
+        except Exception as e:
+            print(f"Billing success verification error: {e}")
+    flash('🎉 You are now a Pro member! Enjoy unlimited scans.', 'success')
+    return redirect(url_for('upload_form'))
+
+
+@app.route('/stripe-webhook', methods=['POST'])
+def stripe_webhook():
+    if not stripe or not STRIPE_WEBHOOK_SECRET:
+        return '', 400
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature', '')
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except Exception as e:
+        print(f"Webhook signature error: {e}")
+        return '', 400
+
+    if event['type'] == 'customer.subscription.deleted':
+        sub = event['data']['object']
+        user = User.query.filter_by(stripe_subscription_id=sub['id']).first()
+        if user:
+            user.is_pro = False
+            user.stripe_subscription_id = None
+            db.session.commit()
+            print(f"Pro cancelled for user {user.id}")
+
+    elif event['type'] == 'invoice.payment_failed':
+        sub_id = event['data']['object'].get('subscription')
+        if sub_id:
+            user = User.query.filter_by(stripe_subscription_id=sub_id).first()
+            if user:
+                user.is_pro = False
+                db.session.commit()
+
+    return '', 200
+
+
+# ── END PRICING & STRIPE ──────────────────────────────────────────────────────
+
 if __name__ == '__main__':
     # Initialize the database
     with app.app_context():
         db.create_all()
         seed_recipe_metadata()
-        
+
     app.run(host='0.0.0.0', port=8080, debug=True)
