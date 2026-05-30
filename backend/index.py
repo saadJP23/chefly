@@ -1519,7 +1519,7 @@ def sitemap():
         ('https://cheflys.com/privacy', '0.3', 'monthly'),
         ('https://cheflys.com/terms', '0.3', 'monthly'),
     ]
-    recipes = Recipe.query.with_entities(Recipe.id, Recipe.updated_at).all()
+    recipes = Recipe.query.with_entities(Recipe.id).all()
     recipe_urls = [
         (f'https://cheflys.com/recipe/{r.id}', '0.6', 'weekly')
         for r in recipes
